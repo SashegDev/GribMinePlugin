@@ -11,6 +11,7 @@ public class handleWeaponCommand {
     public handleWeaponCommand(CommandSender sender, String[] args) {
         switch (args[1].toLowerCase()) {
             case "get":
+
                 sender.sendMessage("Получение информации о оружии...");
                 try {
                     List<String> lore = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand().getItemMeta().getLore();
@@ -23,6 +24,7 @@ public class handleWeaponCommand {
                 }
                 break;
             case "set":
+
                 sender.sendMessage("Установка информации о оружии...");
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
@@ -54,17 +56,26 @@ public class handleWeaponCommand {
                     sender.sendMessage(ex.getMessage());
                 }
                 break;
+
             case "reassemble":
                 // Логика для переоснащения оружия
                 sender.sendMessage("Перековка оружия...");
-                
+
+                List<String> lore = new ArrayList<>();
+                sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand().getItemMeta().setLore(lore);
+
+                Random rand = new Random();
+
+
+
                 break;
+
             case "reset":
                 sender.sendMessage("Сброс информации о оружии...");
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
-                    meta.setLore(new ArrayList<String>());
+                    meta.setLore(new ArrayList<>());
                     item.setItemMeta(meta);
                 } catch(NullPointerException ex) {
                     sender.sendMessage(ex.getMessage());

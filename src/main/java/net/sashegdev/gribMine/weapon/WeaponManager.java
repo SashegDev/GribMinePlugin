@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.weapon;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -22,12 +23,25 @@ public class WeaponManager implements Listener {
     private final HashMap<String, Double> damageModifiers;
     private final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity; // Хранит способности для каждого оружия
     private final HashMap<String, WeaponAbility> weaponAbilities;
+    private final List<Material> validWeaponMaterials; // Список допустимых материалов для оружия
+
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;
         this.playerRarityMap = new HashMap<>();
         this.damageModifiers = damageModifiers;
-        this.weaponAbilitiesForRarity = new HashMap<>(); // Инициализация карты способностей
+        this.weaponAbilitiesForRarity = new HashMap<>();
         this.weaponAbilities = new HashMap<>();
+
+        validWeaponMaterials = List.of(
+                Material.DIAMOND_SWORD,
+                Material.IRON_SWORD,
+                Material.GOLDEN_SWORD,
+                Material.STONE_SWORD,
+                Material.WOODEN_SWORD,
+                Material.BOW,
+                Material.CROSSBOW,
+                Material.TRIDENT
+        );
     }
 
     // Метод для добавления способностей к оружию
@@ -41,6 +55,11 @@ public class WeaponManager implements Listener {
         Player player = event.getPlayer();
         ItemStack item = event.getItem().getItemStack();
         Location loc = player.getLocation();
+
+        // Проверяем, является ли предмет допустимым оружием
+        if (!validWeaponMaterials.contains(item.getType())) {
+            return; // Если нет, выходим из метода
+        }
 
         // Получаем ItemMeta предмета
         ItemMeta itemMeta = item.getItemMeta();

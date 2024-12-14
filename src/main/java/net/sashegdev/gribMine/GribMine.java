@@ -2,6 +2,7 @@ package net.sashegdev.gribMine;
 
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
+import net.sashegdev.gribMine.weapon.ability.FireAbility;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
