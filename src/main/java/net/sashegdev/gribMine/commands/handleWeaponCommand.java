@@ -33,7 +33,7 @@ public class handleWeaponCommand {
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
-                    if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
+                    //if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
                         List<String> lore = new ArrayList<String>();
                         //Хэш для строгого порядка описания на выходе
                         HashMap<String, String> lines = new HashMap<String, String>();
@@ -58,14 +58,14 @@ public class handleWeaponCommand {
                         meta.setLore(lore);
 
                         item.setItemMeta(meta);
-                    } else {
+                    //} else {
 
-                        throw new ItemTypeException("Wrong type of object");
-                    }
+                        //throw new ItemTypeException("Wrong type of object");
+                    //}
                 } catch (NullPointerException ex) {
                     sender.sendMessage(ex.getMessage());
-                } catch (ItemTypeException ex) {
-                    sender.sendMessage(ex.getMessage());
+                //} catch (ItemTypeException ex) {
+                    //sender.sendMessage(ex.getMessage());
                 }
                 break;
             case "reassemble":
