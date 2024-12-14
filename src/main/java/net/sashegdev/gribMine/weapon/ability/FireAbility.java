@@ -34,7 +34,7 @@ public class FireAbility extends WeaponAbility {
                 player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, endLocation, 10, 0.5, 0.5, 0.5, 0.1);
 
                 // Поджигаем сущности в области
-                for (Entity entity : player.getNearbyEntities(3, 2, 3)) { // 3 блока вперед, 2 блока влево и вправо
+                for (Entity entity : player.getNearbyEntities(1, 1, 1)) { // 3 блока вперед, 2 блока влево и вправо
                     if (entity.getLocation().distance(startLocation) <= 3) {
                         entity.setFireTicks(100); // Поджигаем сущность на 5 секунд
                     }
