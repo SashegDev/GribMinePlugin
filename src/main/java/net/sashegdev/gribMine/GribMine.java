@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public final class GribMine extends JavaPlugin implements CommandExecutor {
 
     Logger logger = getLogger();
-    FileConfiguration config;
+    static FileConfiguration config;
 
     private WeaponManager weaponManager;
 
@@ -96,5 +96,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor {
             }return true;
 
         }return false;
+    }
+
+    public static FileConfiguration getMineConfig() {
+        return config;
     }
 }
