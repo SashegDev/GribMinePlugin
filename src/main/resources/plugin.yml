@@ -2,7 +2,7 @@ name: GribMine
 version: '1.0'
 main: net.sashegdev.gribMine.GribMine
 api-version: '1.21'
-prefix: SashegPlugin
-authors: [ SashegDev ]
+prefix: GribMinePlugin
+authors: [ SashegDev, NoisySpektr ]
 description: Просто плагин написанный для GribMine
-website: https://github.com/SashegDev
+website: https://github.com/SashegDev/GribMinePlugin

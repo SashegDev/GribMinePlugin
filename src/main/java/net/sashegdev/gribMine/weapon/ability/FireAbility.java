@@ -55,6 +55,6 @@ public class FireAbility extends WeaponAbility {
     }
 
     public String getRussianName() {
-        return "ХЗ";
+        return "Пламенный Удар";
     }
 }
