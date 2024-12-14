@@ -14,5 +14,8 @@ damage_mod:
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
 
+
 ability_translate:
   fire: "Пламенный удар"
+  lightStrike: "Удар Зевса"
+  desiccation: "Яд разложения"
