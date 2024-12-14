@@ -3,6 +3,7 @@ package net.sashegdev.gribMine.commands;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
+import net.sashegdev.gribMine.exceptions.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -28,35 +29,42 @@ public class handleWeaponCommand {
                 break;
             case "set":
                 sender.sendMessage("Установка информации о оружии...");
+
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
+                    if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
+                        List<String> lore = new ArrayList<String>();
+                        //Хэш для строгого порядка описания на выходе
+                        HashMap<String, String> lines = new HashMap<String, String>();
 
-                    List<String> lore = new ArrayList<String>();
-                    //Хэш для строгого порядка описания на выходе
-                    HashMap<String, String> lines = new HashMap<String, String>();
+                        for (String arg : args) {
 
-                    for (String arg : args) {
-
-                        String[] m = arg.split("=");
-                        if (m[0].strip().equals("rarity")) {
-                            lines.put("rarity", m[1].strip());
+                            String[] m = arg.split("=");
+                            if (m[0].strip().equals("rarity")) {
+                                lines.put("rarity", m[1].strip());
+                            }
+                            if (m[0].strip().equals("ability")) {
+                                lines.put("ability", m[1].strip());
+                            }
                         }
-                        if (m[0].strip().equals("ability")) {
-                            lines.put("ability", m[1].strip());
-                        }
+
+                        lore.add("Редкость: " + (lines.get("rarity") != null ? lines.get("rarity") : "common"));
+
+                        lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")).getRussianName());
+
+                        lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + lines.get("rarity"), 1.0));
+
+                        meta.setLore(lore);
+
+                        item.setItemMeta(meta);
+                    } else {
+
+                        throw new ItemTypeException("Wrong type of object");
                     }
-
-                    lore.add("Редкость: " + (lines.get("rarity") != null ? lines.get("rarity") : "common"));
-
-                    lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")).getRussianName());
-
-                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + lines.get("rarity"), 1.0));
-
-                    meta.setLore(lore);
-
-                    item.setItemMeta(meta);
                 } catch (NullPointerException ex) {
+                    sender.sendMessage(ex.getMessage());
+                } catch (ItemTypeException ex) {
                     sender.sendMessage(ex.getMessage());
                 }
                 break;

@@ -25,7 +25,7 @@ public class WeaponManager implements Listener {
     private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
 
     // Список допустимых типов оружия
-    private final List<String> allowedWeaponTypes = List.of(
+    private static final List<String> allowedWeaponTypes = List.of(
             "netherite_sword",
             "diamond_sword",
             "iron_sword",
@@ -172,4 +172,6 @@ public class WeaponManager implements Listener {
     public static HashMap<String, WeaponAbility> getWeaponAbilities() {
         return weaponAbilities;
     }
+
+    public static List<String> getAllowedWeaponTypes() { return allowedWeaponTypes; }
 }
