@@ -39,6 +39,7 @@ public class WeaponManager implements Listener {
     // Метод для добавления способностей к оружию
     public void addAbility(String weaponName, String rarity, WeaponAbility ability) {
         weaponAbilities.put(weaponName, ability);
+        weaponAbilities.put(ability.getRussianName(), ability);
         weaponAbilitiesForRarity.get(rarity).add(ability);
     }
 
