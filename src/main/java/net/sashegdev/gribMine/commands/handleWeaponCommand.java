@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.commands;
 
 import net.sashegdev.gribMine.GribMine;
+import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.*;
@@ -43,7 +44,7 @@ public class handleWeaponCommand {
                     }
 
                     lore.add("Редкость: " + (lines.get("rarity") != null ? lines.get("rarity") : "common"));
-                    lore.add("Пассивная способность: " + (lines.get("ability") != null ? lines.get("ability") : "none"));
+                    lore.add("Способность: " + (lines.get("ability") != null ? lines.get("ability") : "none"));
                     lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + lines.get("rarity"), 1.0));
 
                     meta.setLore(lore);
@@ -55,11 +56,19 @@ public class handleWeaponCommand {
                 break;
             case "reassemble":
                 // Логика для переоснащения оружия
-                sender.sendMessage("Переоснащение оружия...");
+                sender.sendMessage("Перековка оружия...");
+                
                 break;
             case "reset":
-                // Логика для сброса информации о оружии
                 sender.sendMessage("Сброс информации о оружии...");
+                try {
+                    ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
+                    ItemMeta meta = item.getItemMeta();
+                    meta.setLore(new ArrayList<String>());
+                    item.setItemMeta(meta);
+                } catch(NullPointerException ex) {
+                    sender.sendMessage(ex.getMessage());
+                }
                 break;
             default:
                 sender.sendMessage("Неизвестная подкоманда для weapon.");

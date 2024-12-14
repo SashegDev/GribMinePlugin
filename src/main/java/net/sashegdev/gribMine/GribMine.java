@@ -90,13 +90,11 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 // Если рарность известна и есть пассивная способность
                 if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
                     // Получаем список способностей для данной рарности
-                    List<WeaponAbility> abilities = weaponManager.getWeaponAbilities(rarity);
+                    HashMap<String, WeaponAbility> abilities = weaponManager.getWeaponAbilities();
                     if (abilities != null) {
-                        for (WeaponAbility ability : abilities) {
-                            // Проверяем, сработает ли способность
-                            if (Math.random() < ability.getChance()) {
-                                ability.activate(player); // Активируем способность на атакующем игроке
-                            }
+                        // Проверяем, сработает ли способность
+                        if (Math.random() < abilities.get(passiveAbility).getChance()) {
+                            abilities.get(passiveAbility).activate(player); // Активируем способность на атакующем игроке
                         }
                     }
                 }

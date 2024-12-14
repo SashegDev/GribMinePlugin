@@ -20,18 +20,20 @@ public class WeaponManager implements Listener {
     private final List<String> rarityList;
     private final HashMap<UUID, List<String>> playerRarityMap;
     private final HashMap<String, Double> damageModifiers;
-    private final HashMap<String, List<WeaponAbility>> weaponAbilities; // Хранит способности для каждого оружия
-
+    private final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity; // Хранит способности для каждого оружия
+    private final HashMap<String, WeaponAbility> weaponAbilities;
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;
         this.playerRarityMap = new HashMap<>();
         this.damageModifiers = damageModifiers;
-        this.weaponAbilities = new HashMap<>(); // Инициализация карты способностей
+        this.weaponAbilitiesForRarity = new HashMap<>(); // Инициализация карты способностей
+        this.weaponAbilities = new HashMap<>();
     }
 
     // Метод для добавления способностей к оружию
     public void addWeaponAbility(String weaponName, WeaponAbility ability) {
-        weaponAbilities.computeIfAbsent(weaponName, k -> new ArrayList<>()).add(ability);
+        weaponAbilitiesForRarity.computeIfAbsent(weaponName, k -> new ArrayList<>()).add(ability);
+        weaponAbilities.put(weaponName, ability);
     }
 
     @EventHandler
@@ -115,7 +117,11 @@ public class WeaponManager implements Listener {
         return rarityList;
     }
 
-    public List<WeaponAbility> getWeaponAbilities(String rarity) {
-        return weaponAbilities.get(rarity);
+    public List<WeaponAbility> getWeaponAbilitiesForRarity(String rarity) {
+        return weaponAbilitiesForRarity.get(rarity);
+    }
+
+    public HashMap<String, WeaponAbility> getWeaponAbilities() {
+        return weaponAbilities;
     }
 }
