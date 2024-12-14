@@ -54,6 +54,10 @@ public class WeaponManager implements Listener {
         }
     }
 
+    public static String getNameByRussian(String name) {
+        return weaponAbilities.get(name).getName();
+    }
+
     @EventHandler
     public void PickUpEvent(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
