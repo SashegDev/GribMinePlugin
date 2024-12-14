@@ -59,6 +59,7 @@ public class WeaponManager implements Listener {
 
         addAbility(new FireAbility().getName(), "rare", new FireAbility());
         addAbility(new LightStrike().getName(), "legendary", new LightStrike());
+        addAbility(new DesiccationAbility().getName(), "uncommon", new DesiccationAbility());
     }
 
     // Метод для добавления способностей к оружию
