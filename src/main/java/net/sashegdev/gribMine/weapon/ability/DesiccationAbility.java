@@ -22,8 +22,10 @@ public class DesiccationAbility extends WeaponAbility {
             public void run() {
                 for (Entity e : player.getNearbyEntities(3, 2, 3)) {
                     if (e.getLocation().distance(location) < 3) {
-                        LivingEntity le = (LivingEntity) e;
-                        le.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20*2, 1));
+                        if (e instanceof LivingEntity) {
+                            LivingEntity le = (LivingEntity) e;
+                            le.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 2, 1));
+                        }
                     }
                 }
 
