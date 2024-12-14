@@ -89,7 +89,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
                     HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                     if (abilities != null) {
-                        WeaponAbility ability = abilities.get(passiveAbility);
+                        WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
                         if (ability != null) {
                             if (Math.random() < ability.getChance()) {
                                 logger.info("Сработала способка!");
