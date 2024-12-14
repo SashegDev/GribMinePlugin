@@ -58,6 +58,7 @@ public class WeaponManager implements Listener {
         weaponAbilitiesForRarity.put("legendary", new ArrayList<>());
 
         addAbility(new FireAbility().getName(), "rare", new FireAbility());
+        addAbility(new LightStrike().getName(), "legendary", new LightStrike());
     }
 
     // Метод для добавления способностей к оружию
