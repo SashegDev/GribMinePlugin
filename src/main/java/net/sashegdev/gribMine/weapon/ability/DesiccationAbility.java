@@ -36,7 +36,7 @@ public class DesiccationAbility extends WeaponAbility {
                     }
 
                 step += 1;
-                if (step >= 10) {
+                if (step >= 30) {
                     cancel();
                 }
             }
