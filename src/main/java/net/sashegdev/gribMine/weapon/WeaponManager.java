@@ -93,7 +93,7 @@ public class WeaponManager implements Listener {
             // Устанавливаем атрибут урона
             if (!itemMeta.hasAttributeModifiers()) {
                 double damageModifier = getDamageModifier(rarity);
-                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_NUMBER));
+                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
                 item.setItemMeta(itemMeta);
             }
 

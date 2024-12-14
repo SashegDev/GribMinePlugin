@@ -1,7 +1,6 @@
 package net.sashegdev.gribMine.commands;
 
 import net.sashegdev.gribMine.GribMine;
-import net.sashegdev.gribMine.weapon.ability.*;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.command.CommandSender;
@@ -179,7 +178,9 @@ public class handleWeaponCommand {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
                     meta.setLore(new ArrayList<String>());
+                    meta.getAttributeModifiers().clear();
                     item.setItemMeta(meta);
+
                 } catch(NullPointerException ex) {
                     sender.sendMessage(ex.getMessage());
                 }
