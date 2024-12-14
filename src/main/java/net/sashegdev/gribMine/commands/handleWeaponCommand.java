@@ -33,7 +33,7 @@ public class handleWeaponCommand {
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
-                    if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().name())) {
+                    if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
                         List<String> lore = new ArrayList<String>();
                         //Хэш для строгого порядка описания на выходе
                         HashMap<String, String> lines = new HashMap<String, String>();
