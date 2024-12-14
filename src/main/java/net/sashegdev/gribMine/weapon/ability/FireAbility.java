@@ -11,7 +11,7 @@ import org.bukkit.util.Vector;
 
 public class FireAbility extends WeaponAbility {
     public FireAbility() {
-        super("fire","Пламенный удар", 0.7); // Название и шанс срабатывания 70%
+        super("fire", "Пламенный удар", 0.7); // Название и шанс срабатывания 70%
     }
 
     @Override
@@ -30,22 +30,33 @@ public class FireAbility extends WeaponAbility {
 
             @Override
             public void run() {
-                // Создаем частицы лавы от позиции глаз до конечной позиции
-                player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, endLocation, 10, 0.5, 0.5, 0.5, 0.1);
-
                 // Поджигаем сущности в области
-                for (Entity entity : player.getNearbyEntities(1, 1, 1)) { // 3 блока вперед, 2 блока влево и вправо
+                for (Entity entity : player.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
                     if (entity.getLocation().distance(startLocation) <= 3) {
                         entity.setFireTicks(100); // Поджигаем сущность на 5 секунд
+
+                        // Запускаем задачу для испускания частиц из подожженной сущности
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (entity.isValid() && entity.isVisualFire()) {
+                                    entity.getWorld().spawnParticle(org.bukkit.Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
+                                } else {
+                                    cancel(); // Останавливаем задачу, если сущность больше не подожжена
+                                }
+                            }
+                        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5); // Запускаем задачу с задержкой 0 и периодом 5 тиков
                     }
                 }
 
                 // Поджигаем блоки в области
                 for (int x = -2; x <= 2; x++) {
                     for (int z = -2; z <= 2; z++) {
-                        Location blockLocation = endLocation.clone().add(x, player.getLocation().getY(), z);
+                        Location blockLocation = endLocation.clone().add(x, 0, z);
                         if (blockLocation.getBlock().getType() == Material.AIR) {
                             blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
+                            // Спавним частицы над блоком
+                            player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, blockLocation.clone().add(0, 1, 0), 10, 0.5, 0.5, 0.5, 0.1);
                         }
                     }
                 }

@@ -3,7 +3,10 @@ package net.sashegdev.gribMine.commands;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.*;
 
@@ -175,14 +178,29 @@ public class handleWeaponCommand {
             case "reset":
                 sender.sendMessage("Сброс информации о оружии...");
                 try {
-                    ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                    ItemMeta meta = item.getItemMeta();
-                    meta.setLore(new ArrayList<String>());
-                    meta.getAttributeModifiers().clear();
-                    item.setItemMeta(meta);
+                    Player player = sender.getServer().getPlayer(sender.getName());
+                    if (player != null) {
+                        ItemStack item = player.getInventory().getItemInMainHand();
+                        if (item != null && item.hasItemMeta()) {
+                            // Получаем тип предмета
+                            Material itemType = item.getType();
 
-                } catch(NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                            // Создаем новый ItemMeta без атрибутов
+                            ItemMeta newMeta = Bukkit.getItemFactory().getItemMeta(itemType);
+                            if (newMeta != null) {
+                                // Устанавливаем новый ItemMeta в предмет
+                                item.setItemMeta(newMeta);
+                            }
+
+                            player.sendMessage("Информация о оружии сброшена.");
+                        } else {
+                            player.sendMessage("У вас нет предмета в руках.");
+                        }
+                    } else {
+                        sender.sendMessage("Игрок не найден.");
+                    }
+                } catch (NullPointerException ex) {
+                    sender.sendMessage("Произошла ошибка: " + ex.getMessage());
                 }
                 break;
             default:
