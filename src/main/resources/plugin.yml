@@ -1,0 +1,8 @@
+name: GribMine
+version: '1.0'
+main: net.sashegdev.gribMine.GribMine
+api-version: '1.21'
+prefix: SashegPlugin
+authors: [ SashegDev ]
+description: Просто плагин написанный для GribMine
+website: https://github.com/SashegDev
