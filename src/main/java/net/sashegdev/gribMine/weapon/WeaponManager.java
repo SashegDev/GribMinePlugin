@@ -23,6 +23,28 @@ public class WeaponManager implements Listener {
     private final HashMap<String, Double> damageModifiers;
     private static final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity = new HashMap<>(); // Хранит способности для каждого оружия
     private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
+
+    // Список допустимых типов оружия
+    private final List<String> allowedWeaponTypes = List.of(
+            "netherite_sword",
+            "diamond_sword",
+            "iron_sword",
+            "golden_sword",
+            "wooden_sword",
+
+            "netherite_axe",
+            "diamond_axe",
+            "iron_axe",
+            "golden_axe",
+            "wooden_axe",
+
+            "trident",
+            "mace",
+
+            "bow",
+            "crossbow"
+    ); // Добавьте сюда допустимые типы оружия
+
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;
         this.playerRarityMap = new HashMap<>();
@@ -79,43 +101,47 @@ public class WeaponManager implements Listener {
                 rarity = rarityList.get(0); // Минимальная рарность
             }
 
-            // Обновляем лор только если он не содержит информацию о способности
-            if (passiveAbility == null) {
-                itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
-            } else {
-                // Если рарность известна, получаем модификатор урона
-                double damageModifier = getDamageModifier(rarity);
-                itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility, damageModifier)); // Обновляем лор с модификатором
-            }
-
-            item.setItemMeta(itemMeta);
-
-            // Устанавливаем атрибут урона
-            if (!itemMeta.hasAttributeModifiers()) {
-                double damageModifier = getDamageModifier(rarity);
-                if (damageModifier > 1) {
-                    itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
-                    item.setItemMeta(itemMeta);
-                }
-            }
-
-            // Обработка рарности
-            if (rarityList.contains(rarity)) {
-                // Проверяем, поднимал ли игрок эту рарность ранее
-                if (!playerRarityMap.containsKey(player.getUniqueId())) {
-                    playerRarityMap.put(player.getUniqueId(), new ArrayList<>());
+            // Проверяем, является ли предмет допустимым типом оружия
+            String weaponType = item.getType().name().toLowerCase(); // Получаем тип оружия
+            if (allowedWeaponTypes.contains(weaponType)) {
+                // Обновляем лор только если он не содержит информацию о способности
+                if (passiveAbility == null) {
+                    itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
+                } else {
+                    // Если рарность известна, получаем модификатор урона
+                    double damageModifier = getDamageModifier(rarity);
+                    itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility, damageModifier)); // Обновляем лор с модификатором
                 }
 
-                List<String> playerRarities = playerRarityMap.get(player.getUniqueId());
-                if (!playerRarities.contains(rarity)) {
-                    // Если игрок поднимает рарность в первый раз, создаем частицы
-                    for (int i = 0; i < 30; i++) { // Количество частиц
-                        double angle = Math.random() * 2 * Math.PI; // Случайный угол
-                        double x = Math.cos(angle) * 0.5; // Смещение по X
-                        double z = Math.sin(angle) * 0.5; // Смещение по Z
-                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
+                item.setItemMeta(itemMeta);
+
+                // Устанавливаем атрибут урона
+                if (!itemMeta.hasAttributeModifiers()) {
+                    double damageModifier = getDamageModifier(rarity);
+                    if (damageModifier > 1) {
+                        itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
+                        item.setItemMeta(itemMeta);
                     }
-                    playerRarities.add(rarity); // Добавляем рарность в список
+                }
+
+                // Обработка рарности
+                if (rarityList.contains(rarity)) {
+                    // Проверяем, поднимал ли игрок эту рарность ранее
+                    if (!playerRarityMap.containsKey(player.getUniqueId())) {
+                        playerRarityMap.put(player.getUniqueId(), new ArrayList<>());
+                    }
+
+                    List<String> playerRarities = playerRarityMap.get(player.getUniqueId());
+                    if (!playerRarities.contains(rarity)) {
+                        // Если игрок поднимает рарность в первый раз, создаем частицы
+                        for (int i = 0; i < 30; i++) { // Количество частиц
+                            double angle = Math.random() * 2 * Math.PI; // Случайный угол
+                            double x = Math.cos(angle) * 0.5; // Смещение по X
+                            double z = Math.sin(angle) * 0.5; // Смещение по Z
+                            player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
+                        }
+                        playerRarities.add(rarity); // Добавляем рарность в список
+                    }
                 }
             }
         }
@@ -144,5 +170,4 @@ public class WeaponManager implements Listener {
     public static HashMap<String, WeaponAbility> getWeaponAbilities() {
         return weaponAbilities;
     }
-
 }

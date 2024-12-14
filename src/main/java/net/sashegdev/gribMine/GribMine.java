@@ -6,6 +6,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -64,8 +66,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @EventHandler
     public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player) {
-            Player player = (Player) event.getDamager();
+        Entity damager = event.getDamager();
+        if (damager instanceof Player) {
+            Player player = (Player) damager;
             logger.info("player attacked ponos!");
 
             ItemStack weapon = player.getInventory().getItemInMainHand();
@@ -101,11 +104,52 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                 }
             }
+        } else if (damager instanceof Arrow) {
+            Arrow arrow = (Arrow) damager;
+            Entity shooter = (Entity) arrow.getShooter();
+            if (shooter instanceof Player) {
+                Player player = (Player) shooter;
+                logger.info("player shot an arrow!");
+
+                ItemStack weapon = player.getInventory().getItemInMainHand();
+                ItemMeta weaponMeta = weapon.getItemMeta();
+
+                if (weaponMeta != null) {
+                    List<String> lore = weaponMeta.getLore();
+                    String rarity = null;
+                    String passiveAbility = null;
+
+                    if (lore != null) {
+                        for (String line : lore) {
+                            if (line.startsWith("Редкость: ")) {
+                                rarity = line.substring(10);
+                            } else if (line.startsWith("Способность: ")) {
+                                passiveAbility = line.substring(13);
+                            }
+                        }
+                    }
+
+                    if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                        HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                        if (abilities != null) {
+                            WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
+                            if (ability != null) {
+                                if (Math.random() < ability.getChance()) {
+                                    logger.info("Сработала способка от стрелы!");
+                                    ability.activate(player);
+                                }
+                            } else {
+                                logger.warning("Способность не найдена: " + passiveAbility);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command , String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
                 sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");
