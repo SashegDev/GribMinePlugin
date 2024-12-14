@@ -47,7 +47,7 @@ public class handleWeaponCommand {
 
                     lore.add("Редкость: " + (lines.get("rarity") != null ? lines.get("rarity") : "common"));
 
-                    lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")));
+                    lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")).getRussianName());
 
                     lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + lines.get("rarity"), 1.0));
 
