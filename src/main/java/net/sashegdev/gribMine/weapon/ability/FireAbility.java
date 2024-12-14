@@ -41,7 +41,7 @@ public class FireAbility extends WeaponAbility {
                 // Поджигаем блоки в области
                 for (int x = -2; x <= 2; x++) {
                     for (int z = -2; z <= 2; z++) {
-                        Location blockLocation = endLocation.clone().add(x, 0, z);
+                        Location blockLocation = endLocation.clone().add(x, player.getLocation().getY(), z);
                         if (blockLocation.getBlock().getType() != Material.AIR) {
                             blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
                         }
