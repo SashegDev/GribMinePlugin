@@ -1,10 +1,17 @@
 package net.sashegdev.gribMine;
 
+import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 
@@ -12,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-public final class GribMine extends JavaPlugin implements CommandExecutor {
+public final class GribMine extends JavaPlugin implements CommandExecutor, Listener {
 
     Logger logger = getLogger();
     static FileConfiguration config;
@@ -52,6 +59,49 @@ public final class GribMine extends JavaPlugin implements CommandExecutor {
 
         // Регистрируем команды
         getCommand("gribadmin").setExecutor(this);
+    }
+
+    @EventHandler
+    public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
+        // Проверяем, что атакующий - игрок
+        if (event.getDamager() instanceof Player) {
+            Player player = (Player) event.getDamager();
+
+
+            // Получаем предмет, который держит игрок
+            ItemStack weapon = player.getInventory().getItemInMainHand();
+            ItemMeta weaponMeta = weapon.getItemMeta();
+
+            if (weaponMeta != null) {
+                List<String> lore = weaponMeta.getLore();
+                String rarity = null;
+                String passiveAbility = null;
+                // Проверяем наличие тега рарности и пассивной способности в лоре
+                if (lore != null) {
+                    for (String line : lore) {
+                        if (line.startsWith("Редкость: ")) {
+                            rarity = line.substring(10);
+                        } else if (line.startsWith("Способность: ")) {
+                            passiveAbility = line.substring(13); // Извлекаем пассивную способность
+                        }
+                    }
+                }
+
+                // Если рарность известна и есть пассивная способность
+                if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                    // Получаем список способностей для данной рарности
+                    List<WeaponAbility> abilities = weaponManager.getWeaponAbilities(rarity);
+                    if (abilities != null) {
+                        for (WeaponAbility ability : abilities) {
+                            // Проверяем, сработает ли способность
+                            if (Math.random() < ability.getChance()) {
+                                ability.activate(player); // Активируем способность на атакующем игроке
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 

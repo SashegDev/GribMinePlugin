@@ -17,14 +17,21 @@ import java.util.List;
 import java.util.UUID;
 
 public class WeaponManager implements Listener {
-    private final List<String> rarityList; // Список рарностей из конфигурации
-    private final HashMap<UUID, List<String>> playerRarityMap; // Хранит рарности, которые игрок уже поднимал
-    private final HashMap<String, Double> damageModifiers; // Хранит множители урона для каждой рарности
+    private final List<String> rarityList;
+    private final HashMap<UUID, List<String>> playerRarityMap;
+    private final HashMap<String, Double> damageModifiers;
+    private final HashMap<String, List<WeaponAbility>> weaponAbilities; // Хранит способности для каждого оружия
 
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;
         this.playerRarityMap = new HashMap<>();
-        this.damageModifiers = damageModifiers; // Загружаем множители из конфигурации
+        this.damageModifiers = damageModifiers;
+        this.weaponAbilities = new HashMap<>(); // Инициализация карты способностей
+    }
+
+    // Метод для добавления способностей к оружию
+    public void addWeaponAbility(String weaponName, WeaponAbility ability) {
+        weaponAbilities.computeIfAbsent(weaponName, k -> new ArrayList<>()).add(ability);
     }
 
     @EventHandler
@@ -37,13 +44,13 @@ public class WeaponManager implements Listener {
         ItemMeta itemMeta = item.getItemMeta();
         if (itemMeta != null) {
             List<String> lore = itemMeta.getLore();
+            String rarity = null;
 
             // Проверяем наличие тега рарности в лоре
-            String rarity = null;
             if (lore != null) {
                 for (String line : lore) {
-                    if (line.startsWith("Редкость: ")) { // Предполагаем, что рарность записана в лоре
-                        rarity = line.substring(10); // Извлекаем рарность
+                    if (line.startsWith("Редкость: ")) {
+                        rarity = line.substring(10);
                         break;
                     }
                 }
@@ -68,10 +75,6 @@ public class WeaponManager implements Listener {
                 // Устанавливаем атрибут урона
                 itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.MULTIPLY_SCALAR_1));
                 item.setItemMeta(itemMeta);
-
-                // Создаем объект Weapon и присваиваем его игроку или храним в каком-то месте
-                Weapon weapon = new Weapon(rarity, damageModifier);
-                // Здесь вы можете сохранить weapon в каком-то месте, например, в инвентаре игрока или в другой структуре данных
             }
 
             // Обработка рарности
@@ -99,12 +102,20 @@ public class WeaponManager implements Listener {
     private List<String> createLoreWithRarity(String rarity, String passiveAbility, double damageModifier) {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
-        lore.add("Пассивная способность: " + passiveAbility);
+        lore.add("Способность: " + passiveAbility);
         lore.add("Модификатор урона: " + damageModifier);
         return lore;
     }
 
     public double getDamageModifier(String rarity) {
         return damageModifiers.getOrDefault(rarity, 1.0); // Возвращаем множитель урона, если рарность не найдена, возвращаем 1.0
+    }
+
+    public List<String> getRarityList() {
+        return rarityList;
+    }
+
+    public List<WeaponAbility> getWeaponAbilities(String rarity) {
+        return weaponAbilities.get(rarity);
     }
 }

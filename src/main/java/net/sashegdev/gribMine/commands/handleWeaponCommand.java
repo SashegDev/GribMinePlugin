@@ -1,7 +1,5 @@
 package net.sashegdev.gribMine.commands;
 
-import net.sashegdev.gribMine.weapon.Weapon;
-import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.GribMine;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.*;
