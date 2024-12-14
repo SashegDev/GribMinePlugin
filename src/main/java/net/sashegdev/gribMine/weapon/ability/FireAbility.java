@@ -33,12 +33,14 @@ public class FireAbility extends WeaponAbility {
                     for (Entity entity : player.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
                         if (entity.getLocation().distance(targetLocation) <= 3) {
                             igniteEntity(entity);
+                            entity.setFireTicks(100);
                         }
                     }
                 } else {
                     for (Entity entity : target.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
                         if (entity.getLocation().distance(targetLocation) <= 3) {
                             igniteEntity(entity);
+                            entity.setFireTicks(100);
                         }
                     }
                 }
