@@ -33,7 +33,8 @@ public class DesiccationAbility extends WeaponAbility {
                         player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, block.clone().add(0, 1, 0), 5, 0.5, 0.5, 0.5, 0.1);
                     }
 
-                if (step >= 5) {
+                step += 1;
+                if (step >= 10) {
                     cancel();
                 }
             }
