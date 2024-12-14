@@ -53,4 +53,8 @@ public class FireAbility extends WeaponAbility {
             }
         }.runTaskLater(Bukkit.getPluginManager().getPlugin("GribMine"), 5); // Задержка в 5 тиков (примерно 0.25 секунды)
     }
+
+    public String getRussianName() {
+        return "ХЗ";
+    }
 }

@@ -19,6 +19,8 @@ public abstract class WeaponAbility {
         return chance;
     }
 
+    public String getRussianName() { return "ХЗ ЛОЛ"; }
+
     // Метод, который будет вызываться при активации способности
     public abstract void activate(Player player);
 }

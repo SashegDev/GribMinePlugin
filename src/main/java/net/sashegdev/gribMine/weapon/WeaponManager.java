@@ -1,10 +1,11 @@
 package net.sashegdev.gribMine.weapon;
 
+import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.data.type.Fire;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,6 +13,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,33 +23,36 @@ public class WeaponManager implements Listener {
     private final List<String> rarityList;
     private final HashMap<UUID, List<String>> playerRarityMap;
     private final HashMap<String, Double> damageModifiers;
-    private final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity; // Хранит способности для каждого оружия
-    private final HashMap<String, WeaponAbility> weaponAbilities;
-    private final List<Material> validWeaponMaterials; // Список допустимых материалов для оружия
-
+    private static final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity = new HashMap<>(); // Хранит способности для каждого оружия
+    private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;
         this.playerRarityMap = new HashMap<>();
         this.damageModifiers = damageModifiers;
-        this.weaponAbilitiesForRarity = new HashMap<>();
-        this.weaponAbilities = new HashMap<>();
+        weaponAbilitiesForRarity.put("common", new ArrayList<>());
+        weaponAbilitiesForRarity.put("uncommon", new ArrayList<>());
+        weaponAbilitiesForRarity.put("rare", new ArrayList<>());
+        weaponAbilitiesForRarity.put("epic", new ArrayList<>());
+        weaponAbilitiesForRarity.put("legendary", new ArrayList<>());
 
-        validWeaponMaterials = List.of(
-                Material.DIAMOND_SWORD,
-                Material.IRON_SWORD,
-                Material.GOLDEN_SWORD,
-                Material.STONE_SWORD,
-                Material.WOODEN_SWORD,
-                Material.BOW,
-                Material.CROSSBOW,
-                Material.TRIDENT
-        );
+        addAbility(new FireAbility().getName(), "rare", new FireAbility());
     }
 
     // Метод для добавления способностей к оружию
-    public void addWeaponAbility(String weaponName, WeaponAbility ability) {
-        weaponAbilitiesForRarity.computeIfAbsent(weaponName, k -> new ArrayList<>()).add(ability);
+    public void addAbility(String weaponName, String rarity, WeaponAbility ability) {
         weaponAbilities.put(weaponName, ability);
+        weaponAbilitiesForRarity.get(rarity).add(ability);
+    }
+
+    public static void addWeaponAbility(ItemStack item, String abilityName) {
+        try {
+            List<String> lore = item.getItemMeta().getLore();
+            ItemMeta meta = item.getItemMeta();
+            lore.set(1, "Способность: " + weaponAbilities.get(abilityName).getRussianName());
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        } catch (NullPointerException ex) {
+        }
     }
 
     @EventHandler
@@ -55,11 +60,6 @@ public class WeaponManager implements Listener {
         Player player = event.getPlayer();
         ItemStack item = event.getItem().getItemStack();
         Location loc = player.getLocation();
-
-        // Проверяем, является ли предмет допустимым оружием
-        if (!validWeaponMaterials.contains(item.getType())) {
-            return; // Если нет, выходим из метода
-        }
 
         // Получаем ItemMeta предмета
         ItemMeta itemMeta = item.getItemMeta();
@@ -136,11 +136,11 @@ public class WeaponManager implements Listener {
         return rarityList;
     }
 
-    public List<WeaponAbility> getWeaponAbilitiesForRarity(String rarity) {
+    public static List<WeaponAbility> getWeaponAbilitiesForRarity(String rarity) {
         return weaponAbilitiesForRarity.get(rarity);
     }
 
-    public HashMap<String, WeaponAbility> getWeaponAbilities() {
+    public static HashMap<String, WeaponAbility> getWeaponAbilities() {
         return weaponAbilities;
     }
 }
