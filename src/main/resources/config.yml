@@ -7,9 +7,12 @@ rarity_list:
 # НЕ МЕНЯТЬ ЛИСТ РЕДКОСТЕЙ!
 
 damage_mod:
-  common: 1
+  common: 0
   uncommon: 2.5
   rare: 4
   epic: 4.5
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
+
+ability_translate:
+  fire: "Пламенный удар"
