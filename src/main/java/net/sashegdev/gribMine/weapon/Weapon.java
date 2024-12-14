@@ -1,33 +1,19 @@
 package net.sashegdev.gribMine.weapon;
 
-import org.bukkit.inventory.ItemStack;
-
 public class Weapon {
-    private String name;
-    private String rarity;
-    private String passiveAbility;
-    private ItemStack itemStack; // Это может быть предмет, представляющий оружие
+    private final String rarity;
+    private final double damageModifier;
 
-    public Weapon(String rarity, String passiveAbility, ItemStack itemStack) {
+    public Weapon(String rarity, double damageModifier) {
         this.rarity = rarity;
-        this.passiveAbility = passiveAbility;
-        this.itemStack = itemStack;
+        this.damageModifier = damageModifier;
     }
+
     public String getRarity() {
         return rarity;
     }
 
-    public String getPassiveAbility() {
-        return passiveAbility;
+    public double getDamageModifier() {
+        return damageModifier;
     }
-
-    public ItemStack getItemStack() {
-        return itemStack;
-    }
-
-    public String getDescription() {
-        return String.format("Оружие: %s\nРарность: %s\nПассивная способность: %s", name, rarity, passiveAbility);
-    }
-
-
 }

@@ -2,6 +2,8 @@ package net.sashegdev.gribMine.weapon;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -40,8 +42,8 @@ public class WeaponManager implements Listener {
             String rarity = null;
             if (lore != null) {
                 for (String line : lore) {
-                    if (line.startsWith("Rarity: ")) { // Предполагаем, что рарность записана в лоре
-                        rarity = line.substring(8); // Извлекаем рарность
+                    if (line.startsWith("Редкость: ")) { // Предполагаем, что рарность записана в лоре
+                        rarity = line.substring(10); // Извлекаем рарность
                         break;
                     }
                 }
@@ -50,13 +52,26 @@ public class WeaponManager implements Listener {
             // Если рарности нет, присваиваем минимальную
             if (rarity == null) {
                 rarity = rarityList.get(0); // Минимальная рарность
-                itemMeta.setLore(createLoreWithRarity(rarity, "none")); // Устанавливаем рарность и пассивку
+                itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
                 item.setItemMeta(itemMeta);
             } else if (!rarityList.contains(rarity)) {
                 // Если рарность не соответствует ни одной из известных, присваиваем минимальную
                 rarity = rarityList.get(0); // Минимальная рарность
-                itemMeta.setLore(createLoreWithRarity(rarity, "none")); // Устанавливаем рарность и пассивку
+                itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
                 item.setItemMeta(itemMeta);
+            } else {
+                // Если рарность известна, получаем модификатор урона
+                double damageModifier = getDamageModifier(rarity);
+                itemMeta.setLore(createLoreWithRarity(rarity, "none", damageModifier)); // Обновляем лор с модификатором
+                item.setItemMeta(itemMeta);
+
+                // Устанавливаем атрибут урона
+                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.MULTIPLY_SCALAR_1));
+                item.setItemMeta(itemMeta);
+
+                // Создаем объект Weapon и присваиваем его игроку или храним в каком-то месте
+                Weapon weapon = new Weapon(rarity, damageModifier);
+                // Здесь вы можете сохранить weapon в каком-то месте, например, в инвентаре игрока или в другой структуре данных
             }
 
             // Обработка рарности
@@ -81,10 +96,11 @@ public class WeaponManager implements Listener {
         }
     }
 
-    private List<String> createLoreWithRarity(String rarity, String passiveAbility) {
+    private List<String> createLoreWithRarity(String rarity, String passiveAbility, double damageModifier) {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
         lore.add("Пассивная способность: " + passiveAbility);
+        lore.add("Модификатор урона: " + damageModifier);
         return lore;
     }
 
