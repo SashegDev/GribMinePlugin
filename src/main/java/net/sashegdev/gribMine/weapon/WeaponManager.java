@@ -30,12 +30,14 @@ public class WeaponManager implements Listener {
             "diamond_sword",
             "iron_sword",
             "golden_sword",
+            "stone_sword",
             "wooden_sword",
 
             "netherite_axe",
             "diamond_axe",
             "iron_axe",
             "golden_axe",
+            "stone_axe",
             "wooden_axe",
 
             "trident",

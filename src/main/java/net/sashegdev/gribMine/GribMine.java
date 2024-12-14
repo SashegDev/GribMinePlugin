@@ -96,7 +96,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         if (ability != null) {
                             if (Math.random() < ability.getChance()) {
                                 logger.info("Сработала способка!");
-                                ability.activate(player);
+                                ability.activate(player, event.getEntity()); // Передаем целевую сущность
                             }
                         } else {
                             logger.warning("Способность не найдена: " + passiveAbility);
@@ -136,7 +136,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                             if (ability != null) {
                                 if (Math.random() < ability.getChance()) {
                                     logger.info("Сработала способка от стрелы!");
-                                    ability.activate(player);
+                                    ability.activate(player, event.getEntity()); // Передаем целевую сущность
                                 }
                             } else {
                                 logger.warning("Способность не найдена: " + passiveAbility);

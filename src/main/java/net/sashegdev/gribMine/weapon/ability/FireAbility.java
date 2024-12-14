@@ -15,14 +15,9 @@ public class FireAbility extends WeaponAbility {
     }
 
     @Override
-    public void activate(Player player) {
-        // Получаем направление взгляда игрока
-        Vector direction = player.getLocation().getDirection();
-        Location startLocation = player.getEyeLocation(); // Начальная позиция - позиция глаз игрока
-
-        // Определяем конечную позицию
-        Location endLocation = startLocation.clone().add(direction.clone().multiply(3)); // 3 блока вперед
-        endLocation.setY(endLocation.getWorld().getHighestBlockYAt(endLocation) + 1); // Устанавливаем Y на верхнюю часть блока
+    public void activate(Player player, Entity target) {
+        // Получаем координаты цели
+        Location targetLocation = target.getLocation();
 
         // Запускаем задачу для создания эффекта
         new BukkitRunnable() {
@@ -31,27 +26,47 @@ public class FireAbility extends WeaponAbility {
             @Override
             public void run() {
                 // Поджигаем сущности в области
-                for (Entity entity : player.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
-                    if (entity.getLocation().distance(startLocation) <= 3) {
-                        entity.setFireTicks(100); // Поджигаем сущность на 5 секунд
+                if (!(player.getInventory().getItemInMainHand().equals(Material.BOW) || player.getInventory().getItemInMainHand().equals(Material.CROSSBOW))) {
+                    for (Entity entity : player.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
+                        if (entity.getLocation().distance(targetLocation) <= 3) {
+                            entity.setFireTicks(100); // Поджигаем сущность на 5 секунд
 
-                        // Запускаем задачу для испускания частиц из подожженной сущности
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                if (entity.isValid() && entity.isVisualFire()) {
-                                    entity.getWorld().spawnParticle(org.bukkit.Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
-                                } else {
-                                    cancel(); // Останавливаем задачу, если сущность больше не подожжена
+                            // Запускаем задачу для испускания частиц из подожженной сущности
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (entity.isValid() && entity.isVisualFire()) {
+                                        entity.getWorld().spawnParticle(org.bukkit.Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
+                                    } else {
+                                        cancel(); // Останавливаем задачу, если сущность больше не подожжена
+                                    }
                                 }
-                            }
-                        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5); // Запускаем задачу с задержкой 0 и периодом 5 тиков
+                            }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5); // Запускаем задачу с задержкой 0 и периодом 5 тиков
+                        }
+                    }
+                } else {
+                    for (Entity entity : target.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
+                        if (entity.getLocation().distance(targetLocation) <= 3) {
+                            entity.setFireTicks(100); // Поджигаем сущность на 5 секунд
+
+                            // Запускаем задачу для испускания частиц из подожженной сущности
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (entity.isValid() && entity.isVisualFire()) {
+                                        entity.getWorld().spawnParticle(org.bukkit.Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
+                                    } else {
+                                        cancel(); // Останавливаем задачу, если сущность больше не подожжена
+                                    }
+                                }
+                            }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5); // Запускаем задачу с задержкой 0 и периодом 5 тиков
+                        }
                     }
                 }
 
-                // Устанавливаем огонь только в направлении взгляда игрока
+                // Устанавливаем огонь только на координатах цели
                 for (int i = 1; i <= 3; i++) { // Устанавливаем огонь на 3 блока вперед
-                    Location blockLocation = startLocation.clone().add(direction.clone().multiply(i));
+                    Location blockLocation = targetLocation.clone().add(0, i, 0); // Устанавливаем огонь на высоту цели
                     if (blockLocation.getBlock().getType() == Material.AIR) {
                         blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
                         // Спавним частицы над блоком

@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine.weapon;
 
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public abstract class WeaponAbility {
@@ -24,5 +25,5 @@ public abstract class WeaponAbility {
     public String getRussianName() { return ru_name; }
 
     // Метод, который будет вызываться при активации способности
-    public abstract void activate(Player player);
+    public abstract void activate(Player player, Entity entity);
 }
