@@ -26,6 +26,8 @@ public class FireAbility extends WeaponAbility {
 
         // Запускаем задачу для создания эффекта
         new BukkitRunnable() {
+            int step = 0; // Счетчик шагов
+
             @Override
             public void run() {
                 // Создаем частицы лавы от позиции глаз до конечной позиции
@@ -42,15 +44,17 @@ public class FireAbility extends WeaponAbility {
                 for (int x = -2; x <= 2; x++) {
                     for (int z = -2; z <= 2; z++) {
                         Location blockLocation = endLocation.clone().add(x, player.getLocation().getY(), z);
-                        if (blockLocation.getBlock().getType() != Material.AIR) {
+                        if (blockLocation.getBlock().getType() == Material.AIR) {
                             blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
                         }
                     }
                 }
 
-                // Останавливаем задачу после одного выполнения
-                cancel();
+                step++;
+                if (step >= 5) { // Количество шагов, чтобы завершить эффект
+                    cancel(); // Останавливаем задачу после завершения
+                }
             }
-        }.runTaskLater(Bukkit.getPluginManager().getPlugin("GribMine"), 5); // Задержка в 5 тиков (примерно 0.25 секунды)
+        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5); // Запускаем задачу с задержкой 0 и периодом 5 тиков
     }
 }

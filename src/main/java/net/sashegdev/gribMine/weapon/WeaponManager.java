@@ -43,17 +43,6 @@ public class WeaponManager implements Listener {
         weaponAbilitiesForRarity.get(rarity).add(ability);
     }
 
-    public static void addWeaponAbility(ItemStack item, String abilityName) {
-        try {
-            List<String> lore = item.getItemMeta().getLore();
-            ItemMeta meta = item.getItemMeta();
-            lore.set(1, "Способность: " + weaponAbilities.get(abilityName).getRussianName());
-            meta.setLore(lore);
-            item.setItemMeta(meta);
-        } catch (NullPointerException ex) {
-        }
-    }
-
     public static String getNameByRussian(String name) {
         return weaponAbilities.get(name).getName();
     }
