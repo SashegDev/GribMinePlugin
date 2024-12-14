@@ -56,7 +56,7 @@ public class WeaponManager implements Listener {
     @EventHandler
     public void PickUpEvent(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
-        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+        ItemStack item = player.getInventory().getItemInMainHand();
         Location loc = player.getLocation();
 
         // Получаем ItemMeta предмета
@@ -64,13 +64,15 @@ public class WeaponManager implements Listener {
         if (itemMeta != null) {
             List<String> lore = itemMeta.getLore();
             String rarity = null;
+            String passiveAbility = null;
 
-            // Проверяем наличие тега рарности в лоре
+            // Проверяем наличие тега рарности и способности в лоре
             if (lore != null) {
                 for (String line : lore) {
                     if (line.startsWith("Редкость: ")) {
                         rarity = line.substring(10);
-                        break;
+                    } else if (line.startsWith("Способность: ")) {
+                        passiveAbility = line.substring(13);
                     }
                 }
             }
@@ -78,21 +80,26 @@ public class WeaponManager implements Listener {
             // Если рарности нет, присваиваем минимальную
             if (rarity == null) {
                 rarity = rarityList.get(0); // Минимальная рарность
-                itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
-                item.setItemMeta(itemMeta);
             } else if (!rarityList.contains(rarity)) {
                 // Если рарность не соответствует ни одной из известных, присваиваем минимальную
                 rarity = rarityList.get(0); // Минимальная рарность
+            }
+
+            // Обновляем лор только если он не содержит информацию о способности
+            if (passiveAbility == null) {
                 itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
-                item.setItemMeta(itemMeta);
             } else {
                 // Если рарность известна, получаем модификатор урона
                 double damageModifier = getDamageModifier(rarity);
-                itemMeta.setLore(createLoreWithRarity(rarity, "none", damageModifier)); // Обновляем лор с модификатором
-                item.setItemMeta(itemMeta);
+                itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility, damageModifier)); // Обновляем лор с модификатором
+            }
 
-                // Устанавливаем атрибут урона
-                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
+            item.setItemMeta(itemMeta);
+
+            // Устанавливаем атрибут урона
+            if (!itemMeta.hasAttributeModifiers()) {
+                double damageModifier = getDamageModifier(rarity);
+                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_NUMBER));
                 item.setItemMeta(itemMeta);
             }
 
@@ -110,7 +117,7 @@ public class WeaponManager implements Listener {
                         double angle = Math.random() * 2 * Math.PI; // Случайный угол
                         double x = Math.cos(angle) * 0.5; // Смещение по X
                         double z = Math.sin(angle) * 0.5; // Смещение по Z
-                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1,0,0,0,0.13);
+                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
                     }
                     playerRarities.add(rarity); // Добавляем рарность в список
                 }
