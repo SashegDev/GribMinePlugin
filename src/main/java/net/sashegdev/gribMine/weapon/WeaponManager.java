@@ -5,15 +5,13 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.block.data.type.Fire;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,9 +54,9 @@ public class WeaponManager implements Listener {
     }
 
     @EventHandler
-    public void PickUpEvent(PlayerPickupItemEvent event) {
+    public void PickUpEvent(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
-        ItemStack item = event.getItem().getItemStack();
+        ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
         Location loc = player.getLocation();
 
         // Получаем ItemMeta предмета
@@ -94,7 +92,7 @@ public class WeaponManager implements Listener {
                 item.setItemMeta(itemMeta);
 
                 // Устанавливаем атрибут урона
-                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.MULTIPLY_SCALAR_1));
+                itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
                 item.setItemMeta(itemMeta);
             }
 
@@ -112,7 +110,7 @@ public class WeaponManager implements Listener {
                         double angle = Math.random() * 2 * Math.PI; // Случайный угол
                         double x = Math.cos(angle) * 0.5; // Смещение по X
                         double z = Math.sin(angle) * 0.5; // Смещение по Z
-                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1);
+                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1,0,0,0,0.13);
                     }
                     playerRarities.add(rarity); // Добавляем рарность в список
                 }
@@ -143,4 +141,5 @@ public class WeaponManager implements Listener {
     public static HashMap<String, WeaponAbility> getWeaponAbilities() {
         return weaponAbilities;
     }
+
 }

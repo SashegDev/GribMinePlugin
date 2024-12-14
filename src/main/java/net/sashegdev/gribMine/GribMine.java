@@ -2,7 +2,6 @@ package net.sashegdev.gribMine;
 
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
-import net.sashegdev.gribMine.weapon.ability.FireAbility;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
@@ -33,29 +32,30 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         saveDefaultConfig();
         config = getConfig();
 
-        // Извлекаем список рарностей из конфигурации
+        // Инициализируем WeaponManager
         List<String> rarityList = config.getStringList("rarity_list");
-
-        // Извлекаем множители урона из конфигурации
         HashMap<String, Double> damageModifiers = new HashMap<>();
         for (String rarity : rarityList) {
-            double modifier = config.getDouble("damage_mod." + rarity, 1.0); // Значение по умолчанию 1.0
+            double modifier = config.getDouble("damage_mod." + rarity, 1.0);
             damageModifiers.put(rarity, modifier);
         }
-
-        // Инициализируем WeaponManager с полученным списком рарностей и множителями
         weaponManager = new WeaponManager(rarityList, damageModifiers);
 
-        System.out.println("GribMine Plugin initialized ;)");
-        System.out.println("Версия плагина: " + getDescription().getVersion());
+        // Регистрируем слушатели
+        getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(weaponManager, this); // Регистрация WeaponManager как слушателя
 
+        // Логирование
+        logger.info("GribMine Plugin initialized ;)");
+        logger.info("Версия плагина: " + getDescription().getVersion());
         logger.info("===RARITY_LIST===");
-        for (String string : rarityList) {logger.info(string);}
-
+        for (String string : rarityList) {
+            logger.info(string);
+        }
         logger.info("===DAMAGE_MOD==");
         for (String rarity : rarityList) {
             double modifier = config.getDouble("damage_mod." + rarity, 1.0);
-            logger.info("damage_mod."+rarity+": "+modifier);
+            logger.info("damage_mod." + rarity + ": " + modifier);
         }
 
         // Регистрируем команды
@@ -64,12 +64,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @EventHandler
     public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
-        // Проверяем, что атакующий - игрок
         if (event.getDamager() instanceof Player) {
             Player player = (Player) event.getDamager();
+            logger.info("player attacked ponos!");
 
-
-            // Получаем предмет, который держит игрок
             ItemStack weapon = player.getInventory().getItemInMainHand();
             ItemMeta weaponMeta = weapon.getItemMeta();
 
@@ -77,25 +75,28 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 List<String> lore = weaponMeta.getLore();
                 String rarity = null;
                 String passiveAbility = null;
-                // Проверяем наличие тега рарности и пассивной способности в лоре
+
                 if (lore != null) {
                     for (String line : lore) {
                         if (line.startsWith("Редкость: ")) {
                             rarity = line.substring(10);
                         } else if (line.startsWith("Способность: ")) {
-                            passiveAbility = line.substring(13); // Извлекаем пассивную способность
+                            passiveAbility = line.substring(13);
                         }
                     }
                 }
 
-                // Если рарность известна и есть пассивная способность
                 if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
-                    // Получаем список способностей для данной рарности
                     HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                     if (abilities != null) {
-                        // Проверяем, сработает ли способность
-                        if (Math.random() < abilities.get(passiveAbility).getChance()) {
-                            abilities.get(passiveAbility).activate(player); // Активируем способность на атакующем игроке
+                        WeaponAbility ability = abilities.get(passiveAbility);
+                        if (ability != null) {
+                            if (Math.random() < ability.getChance()) {
+                                logger.info("Сработала способка!");
+                                ability.activate(player);
+                            }
+                        } else {
+                            logger.warning("Способность не найдена: " + passiveAbility);
                         }
                     }
                 }
@@ -103,33 +104,26 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
     }
 
-
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command , String label, String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
                 sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");
                 return true;
             }
             switch (args[0].toLowerCase()) {
-
                 case "reload":
                     reloadConfig();
                     sender.sendMessage("Конфигурация перезагружена.");
                     break;
-
                 case "get_config":
                     StringBuilder configMessage = new StringBuilder("Конфигурация:\n");
-                    // Получаем все ключи верхнего уровня
                     for (String key : config.getKeys(false)) {
-                        Object value = config.get(key); // Получаем значение по ключу
+                        Object value = config.get(key);
                         configMessage.append(key).append(": ").append(value).append("\n");
                     }
-
-                    // Отправляем сообщение
                     sender.sendMessage(configMessage.toString());
                     break;
-
                 case "weapon":
                     if (args.length < 2) {
                         sender.sendMessage("Используйте /gribadmin weapon <get|set|reassemble|reset>");
@@ -137,14 +131,13 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                     new handleWeaponCommand(sender, args);
                     break;
-
                 default:
                     sender.sendMessage("Неизвестная подкоманда.");
                     break;
-
-            }return true;
-
-        }return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     public static FileConfiguration getMineConfig() {

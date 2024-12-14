@@ -6,3 +6,8 @@ prefix: GribMinePlugin
 authors: [ SashegDev, NoisySpektr ]
 description: Просто плагин написанный для GribMine
 website: https://github.com/SashegDev/GribMinePlugin
+
+commands:
+  gribadmin:
+    description: Команда для администрирования плагина GribMine
+    usage: /<command> <reload|get_config|weapon>

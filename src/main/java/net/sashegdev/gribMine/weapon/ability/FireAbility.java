@@ -11,7 +11,7 @@ import org.bukkit.util.Vector;
 
 public class FireAbility extends WeaponAbility {
     public FireAbility() {
-        super("fire", 0.2); // Название и шанс срабатывания 20%
+        super("fire","Пламенный удар", 0.7); // Название и шанс срабатывания 70%
     }
 
     @Override
@@ -52,9 +52,5 @@ public class FireAbility extends WeaponAbility {
                 cancel();
             }
         }.runTaskLater(Bukkit.getPluginManager().getPlugin("GribMine"), 5); // Задержка в 5 тиков (примерно 0.25 секунды)
-    }
-
-    public String getRussianName() {
-        return "Пламенный Удар";
     }
 }
