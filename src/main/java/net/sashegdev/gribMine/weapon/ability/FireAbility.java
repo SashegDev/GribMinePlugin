@@ -4,6 +4,7 @@ import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -51,7 +52,7 @@ public class FireAbility extends WeaponAbility {
                     if (blockLocation.getBlock().getType() == Material.AIR) {
                         blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
                         // Спавним частицы над блоком
-                        player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, blockLocation.clone().add(0, 1, 0), 10, 0.5, 0.5, 0.5, 0.1);
+                        player.getWorld().spawnParticle(Particle.LAVA, blockLocation.clone().add(0, 1, 0), 10, 0.5, 0.5, 0.5, 0.1);
                     }
                 }
 
@@ -69,7 +70,7 @@ public class FireAbility extends WeaponAbility {
                     @Override
                     public void run() {
                         if (entity.isValid() && entity.isVisualFire()) {
-                            entity.getWorld().spawnParticle(org.bukkit.Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
+                            entity.getWorld().spawnParticle(Particle.FLAME, entity.getLocation(), 30, 0.1, 0.1, 0.1, 0.1);
                         } else {
                             cancel(); // Останавливаем задачу, если сущность больше не подожжена
                         }
