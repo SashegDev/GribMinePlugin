@@ -49,15 +49,13 @@ public class FireAbility extends WeaponAbility {
                     }
                 }
 
-                // Поджигаем блоки в области
-                for (int x = -2; x <= 2; x++) {
-                    for (int z = -2; z <= 2; z++) {
-                        Location blockLocation = endLocation.clone().add(x, 0, z);
-                        if (blockLocation.getBlock().getType() == Material.AIR) {
-                            blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
-                            // Спавним частицы над блоком
-                            player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, blockLocation.clone().add(0, 1, 0), 10, 0.5, 0.5, 0.5, 0.1);
-                        }
+                // Устанавливаем огонь только в направлении взгляда игрока
+                for (int i = 1; i <= 3; i++) { // Устанавливаем огонь на 3 блока вперед
+                    Location blockLocation = startLocation.clone().add(direction.clone().multiply(i));
+                    if (blockLocation.getBlock().getType() == Material.AIR) {
+                        blockLocation.getBlock().setType(Material.FIRE); // Устанавливаем огонь на блок
+                        // Спавним частицы над блоком
+                        player.getWorld().spawnParticle(org.bukkit.Particle.LAVA, blockLocation.clone().add(0, 1, 0), 10, 0.5, 0.5, 0.5, 0.1);
                     }
                 }
 
