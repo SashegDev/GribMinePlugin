@@ -21,7 +21,6 @@ public abstract class WeaponAbility {
     public double getChance() {
         return chance;
     }
-
     public String getRussianName() { return ru_name; }
 
     // Метод, который будет вызываться при активации способности
