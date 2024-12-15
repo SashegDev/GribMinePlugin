@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.WritableBookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 
@@ -160,6 +161,13 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 case "reload":
                     reloadConfig();
                     sender.sendMessage("Конфигурация перезагружена.");
+
+                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                    abilities.get("fire").setChance(config.getDouble("ability_chance.fire"));
+                    abilities.get("lightStrike").setChance(config.getDouble("ability_chance.lightStrike"));
+                    abilities.get("desiccation").setChance(config.getDouble("ability_chance.desiccation"));
+                    abilities.get("freezeAbility").setChance(config.getDouble("ability_chance.freeze"));
+
                     break;
                 case "get_config":
                     StringBuilder configMessage = new StringBuilder("Конфигурация:\n");
