@@ -211,6 +211,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         return true;
                     }
                     new summon(sender, args);
+                    break;
                 default:
                     sender.sendMessage("Неизвестная подкоманда.");
                     break;
