@@ -232,6 +232,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("reload");
                 completions.add("get_config");
                 completions.add("weapon");
+                completions.add("airdrop");
             } else if (args.length == 2 && args[0].equalsIgnoreCase("weapon")) {
                 // Подсказки для второго аргумента
                 completions.add("get");
@@ -257,6 +258,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         completions.add("ability=" + abilityName);
                     }
                 }
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("airdrop")) {
+                completions.add("summon");
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("summon")) {
+                completions.add("atme");
             }
         }
 
