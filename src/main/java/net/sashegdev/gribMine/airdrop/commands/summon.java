@@ -13,7 +13,7 @@ public class summon {
             case "summon":
                 if (args.length == 2) {
                     sender.sendMessage("Генерация аирдропа...");
-                    if (sender.getServer().getOnlinePlayers().isEmpty()) {
+                    if (!sender.getServer().getOnlinePlayers().isEmpty()) {
                         if (sender.getServer().getOnlinePlayers() instanceof ArrayList) {
                             ArrayList<Player> players = (ArrayList<Player>) sender.getServer().getOnlinePlayers();
                             Player p = players.get(new Random().nextInt(0, players.size()));
@@ -22,7 +22,7 @@ public class summon {
                     }
                 } else if (args[2].equals("atme")) {
                     sender.sendMessage("Генерация аирдропа...");
-                    if (sender.getServer().getOnlinePlayers().isEmpty()) {
+                    if (!sender.getServer().getOnlinePlayers().isEmpty()) {
                         if (sender.getServer().getOnlinePlayers() instanceof ArrayList) {
                             ArrayList<Player> players = (ArrayList<Player>) sender.getServer().getOnlinePlayers();
                             Player p = players.get(new Random().nextInt(0, players.size()));
