@@ -11,9 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class FireAbility extends WeaponAbility {
-    //TODO: починить приколы с поджогом, так как ебучий поджог работает неправильно
     public FireAbility() {
-        super("fire", "Пламенный удар", GribMine.getMineConfig().getDouble("ability_chance.fire")); // Название и шанс срабатывания 70%
+        super("fire", "Пламенный удар", GribMine.getMineConfig().getDouble("ability_chance.fire"));
     }
 
     @Override

@@ -14,7 +14,7 @@ public class FreezeAbility extends WeaponAbility {
 
 
     public FreezeAbility() {
-        super("freezeAbility", "Ледяной Мост", GribMine.getMineConfig().getDouble("ability_chance.freeze"));
+        super("freeze", "Ледяной Мост", GribMine.getMineConfig().getDouble("ability_chance.freeze"));
     }
 
     @Override
@@ -56,8 +56,9 @@ public class FreezeAbility extends WeaponAbility {
                     double particleY = startY + deltaY * ratio;
                     double particleZ = startZ + deltaZ * ratio;
 
-                    entity.getWorld().spawnParticle(Particle.SNOWFLAKE, particleX, particleY, particleZ, 1, 0, 0, 0,  0);
-                    entity.getWorld().spawnParticle(Particle.DRAGON_BREATH, particleX, particleY, particleZ, 3, 0, 0, 0,  0);
+                    // Исправленный вызов spawnParticle
+                    entity.getWorld().spawnParticle(Particle.SNOWFLAKE, particleX, particleY, particleZ, 1, 0, 0, 0, 0.1);
+                    entity.getWorld().spawnParticle(Particle.DRAGON_BREATH, particleX, particleY, particleZ, 3, 0, 0, 0, 0.1);
                 }
 
                 duration--; // Уменьшаем оставшееся время
