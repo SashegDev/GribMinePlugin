@@ -21,6 +21,20 @@ public class airdropMain {
         armor.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1000*20, 1));
 
         airdropList.add(this);
+
+        activation();
+    }
+
+    public airdropMain(@NotNull Player p, int w, int h) {
+        this.location = p.getLocation().add(new Random().nextInt(-w, w), 0, new Random().nextInt(-h, h));
+        this.location.setY(10000000);
+
+        armor = p.getWorld().spawn(location, ArmorStand.class);
+        armor.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 1000*20, 1));
+
+        airdropList.add(this);
+
+        activation();
     }
 
     public void activation() {
