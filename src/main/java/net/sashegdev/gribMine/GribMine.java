@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -150,7 +151,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        //TODO: сделать подсказки команды
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
                 sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");
@@ -183,6 +183,49 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             return true;
         }
         return false;
+    }
+
+    //подсказки епта, не знаю заработает ли с /gribadmin weapon set
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        List<String> completions = new ArrayList<>();
+
+        if (command.getName().equalsIgnoreCase("gribadmin")) {
+            if (args.length == 1) {
+                // Подсказки для первого аргумента
+                completions.add("reload");
+                completions.add("get_config");
+                completions.add("weapon");
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("weapon")) {
+                // Подсказки для второго аргумента
+                completions.add("get");
+                completions.add("set");
+                completions.add("reassemble");
+                completions.add("reset");
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
+                // Подсказки для третьего аргумента
+                completions.add("rarity=");
+                completions.add("ability=");
+            } else if (args.length == 4 && args[0].equalsIgnoreCase("set")) {
+                // Подсказки для значений rarity
+                if (args[2].startsWith("rarity=")) {
+                    List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
+                    for (String rarity : rarities) {
+                        completions.add("rarity=" + rarity);
+                    }
+                }
+                // Подсказки для значений ability
+                if (args[2].startsWith("ability=")) {
+                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                    for (String abilityName : abilities.keySet()) {
+                        completions.add("ability=" + abilityName);
+                    }
+                }
+            }
+        }
+
+        // Возвращаем список подсказок
+        return completions;
     }
 
     public static FileConfiguration getMineConfig() {

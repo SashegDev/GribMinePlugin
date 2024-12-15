@@ -66,6 +66,7 @@ public class WeaponManager implements Listener {
         addAbility(new FireAbility().getName(), "rare", new FireAbility());
         addAbility(new LightStrike().getName(), "legendary", new LightStrike());
         addAbility(new DesiccationAbility().getName(), "uncommon", new DesiccationAbility());
+        addAbility(new FreezeAbility().getName(), "epic", new FreezeAbility());
     }
 
     // Метод для добавления способностей к оружию
@@ -116,11 +117,11 @@ public class WeaponManager implements Listener {
             if (allowedWeaponTypes.contains(weaponType)) {
                 // Обновляем лор только если он не содержит информацию о способности
                 if (passiveAbility == null) {
-                    itemMeta.setLore(createLoreWithRarity(rarity, "none", 1.0)); // Устанавливаем рарность и пассивку
+                    itemMeta.setLore(createLoreWithRarity(rarity, "none")); // Устанавливаем рарность и пассивку
                 } else {
                     // Если рарность известна, получаем модификатор урона
                     double damageModifier = getDamageModifier(rarity);
-                    itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility, damageModifier)); // Обновляем лор с модификатором
+                    itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility)); // Обновляем лор с модификатором
                 }
 
                 item.setItemMeta(itemMeta);
@@ -157,11 +158,11 @@ public class WeaponManager implements Listener {
         }
     }
 
-    private List<String> createLoreWithRarity(String rarity, String passiveAbility, double damageModifier) {
+    //TODO: нормальную апишку для лора, + добавление цветов для редкостей/абилок
+    private List<String> createLoreWithRarity(String rarity, String passiveAbility) {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
         lore.add("Способность: " + passiveAbility);
-        lore.add("Модификатор урона: " + damageModifier);
         return lore;
     }
 
