@@ -1,7 +1,10 @@
 package net.sashegdev.gribMine;
 
+import net.sashegdev.gribMine.airdrop.commands.summon;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
+import net.sashegdev.gribMine.airdrop.airdropMain;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.CommandExecutor;
@@ -12,15 +15,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.WritableBookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.block.*;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public final class GribMine extends JavaPlugin implements CommandExecutor, Listener {
@@ -150,6 +153,23 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
     }
 
+    @EventHandler
+    public void leftClickHandler(PlayerInteractEvent e) {
+        if (e.getItem() == null) return;
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
+            if (e.getItem().getType() == Material.AMETHYST_SHARD && !e.getItem().getItemMeta().getLore().equals(new ArrayList<String>())
+                && e.getItem().getItemMeta().getDisplayName().equals("бог, дай мне че-нить")) {
+                if (e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
+                    if (e.getPlayer().getServer().getOnlinePlayers() instanceof ArrayList) {
+                        ArrayList<Player> players = (ArrayList<Player>) e.getPlayer().getServer().getOnlinePlayers();
+                        Player p = players.get(new Random().nextInt(0, players.size()));
+                        new airdropMain(p);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
@@ -185,6 +205,12 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                     new handleWeaponCommand(sender, args);
                     break;
+                case "airdrop":
+                    if (args.length < 2) {
+                        sender.sendMessage("Используйте /gribadmin airdrop <summon>");
+                        return true;
+                    }
+                    new summon(sender, args);
                 default:
                     sender.sendMessage("Неизвестная подкоманда.");
                     break;
