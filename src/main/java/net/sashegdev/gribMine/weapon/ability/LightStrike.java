@@ -15,7 +15,7 @@ public class LightStrike extends WeaponAbility {
     //TODO: реализовать прикол когда партиклы будут видны с людой дистанции
 
     public LightStrike() {
-        super("lightStrike", "Удар Зевса", 1);
+        super("lightStrike", "Удар Зевса", 0.5);
     }
 
     @Override
@@ -30,6 +30,7 @@ public class LightStrike extends WeaponAbility {
         // Спавним частицы
         entity.getWorld().spawnParticle(Particle.END_ROD, entity.getLocation(), 650, 0.5, 0.5, 0.5, 0.8);
         entity.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, entity.getLocation(), 500, 0.5, 0.5, 0.5, 0.7);
+        entity.getWorld().spawnParticle(Particle.DRAGON_BREATH, entity.getLocation(), 300, 0.5, 0.5, 0.5, 0.45);
 
         // Получаем координаты удара молнии
         Location strikeLocation = entity.getLocation();
@@ -37,9 +38,9 @@ public class LightStrike extends WeaponAbility {
         // Проходим по всем игрокам в мире
         for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
             // Проверяем расстояние до игрока
-            if (nearbyPlayer.getLocation().distance(strikeLocation) <= 300) {
+            if (nearbyPlayer.getLocation().distance(strikeLocation) <= 800) {
                 // Воспроизводим звук
-                nearbyPlayer.playSound(strikeLocation, Sound.ENTITY_WITHER_SPAWN, 0.0f, 1.0f); // Питч 1.0, громкость 1.0
+                nearbyPlayer.playSound(strikeLocation, Sound.ENTITY_WITHER_SPAWN, 0.0f, 100.0f);
             }
         }
     }

@@ -19,3 +19,15 @@ ability_translate:
   fire: "Пламенный удар"
   lightStrike: "Удар Зевса"
   desiccation: "Яд разложения"
+
+# заготовка под "не железно" записанные в коде шансы способок
+ability_chances:
+  fire:
+  lightStrike:
+  desiccation:
+
+# загатовка под "не железно" записанные в коде виды оружия
+allowed_weapon_list:
+  "",
+  "",
+  ""

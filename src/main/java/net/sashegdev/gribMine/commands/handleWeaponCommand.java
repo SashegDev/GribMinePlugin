@@ -5,6 +5,7 @@ import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.exceptions.*;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,7 +14,6 @@ import org.bukkit.inventory.meta.*;
 
 import java.util.*;
 public class handleWeaponCommand {
-    //TODO: сделать подсказки команды
     public handleWeaponCommand(CommandSender sender, String[] args) {
         switch (args[1].toLowerCase()) {
             case "get":
@@ -25,7 +25,7 @@ public class handleWeaponCommand {
                     else
                         throw new NullPointerException("Null Pointer in Lore");
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
                 }
                 break;
             case "set":
@@ -64,7 +64,7 @@ public class handleWeaponCommand {
                         //throw new ItemTypeException("Wrong type of object");
                     //}
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
                 //} catch (ItemTypeException ex) {
                     //sender.sendMessage(ex.getMessage());
                 }
@@ -189,11 +189,11 @@ public class handleWeaponCommand {
                         item.setItemMeta(meta);
                     }
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
                 }
                 break;
             case "reset":
-                sender.sendMessage("Сброс информации о оружии...");
+                sender.sendMessage(ChatColor.DARK_GREEN+"Сброс информации о оружии...");
                 try {
                     Player player = sender.getServer().getPlayer(sender.getName());
                     if (player != null) {
@@ -209,19 +209,19 @@ public class handleWeaponCommand {
                                 item.setItemMeta(newMeta);
                             }
 
-                            player.sendMessage("Информация о оружии сброшена.");
+                            player.sendMessage(ChatColor.DARK_GREEN+"Информация о оружии сброшена.");
                         } else {
-                            player.sendMessage("У вас нет предмета в руках.");
+                            player.sendMessage(ChatColor.RED+"У вас нет предмета в руках.");
                         }
                     } else {
-                        sender.sendMessage("Игрок не найден.");
+                        sender.sendMessage(ChatColor.RED+"Игрок не найден.");
                     }
                 } catch (NullPointerException ex) {
-                    sender.sendMessage("Произошла ошибка: " + ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+"Произошла ошибка: " + ex.getMessage());
                 }
                 break;
             default:
-                sender.sendMessage("Неизвестная подкоманда для weapon.");
+                sender.sendMessage(ChatColor.RED+"Неизвестная подкоманда для weapon.");
                 break;
         }
     }
