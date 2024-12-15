@@ -166,7 +166,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     abilities.get("fire").setChance(config.getDouble("ability_chance.fire"));
                     abilities.get("lightStrike").setChance(config.getDouble("ability_chance.lightStrike"));
                     abilities.get("desiccation").setChance(config.getDouble("ability_chance.desiccation"));
-                    abilities.get("freezeAbility").setChance(config.getDouble("ability_chance.freeze"));
+                    abilities.get("freeze").setChance(config.getDouble("ability_chance.freeze"));
 
                     break;
                 case "get_config":
