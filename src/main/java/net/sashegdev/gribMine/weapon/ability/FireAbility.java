@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.weapon.ability;
 
 import net.sashegdev.gribMine.weapon.WeaponAbility;
+import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,7 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class FireAbility extends WeaponAbility {
     //TODO: починить приколы с поджогом, так как ебучий поджог работает неправильно
     public FireAbility() {
-        super("fire", "Пламенный удар", 0.7); // Название и шанс срабатывания 70%
+        super("fire", "Пламенный удар", GribMine.getMineConfig().getDouble("ability_chance.fire")); // Название и шанс срабатывания 70%
     }
 
     @Override

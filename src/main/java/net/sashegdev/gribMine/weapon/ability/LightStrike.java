@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.weapon.ability;
 
 import net.sashegdev.gribMine.weapon.WeaponAbility;
+import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -15,7 +16,7 @@ public class LightStrike extends WeaponAbility {
     //TODO: реализовать прикол когда партиклы будут видны с людой дистанции
 
     public LightStrike() {
-        super("lightStrike", "Удар Зевса", 1);
+        super("lightStrike", "Удар Зевса", GribMine.getMineConfig().getDouble("ability_chance.lightStrike"));
     }
 
     @Override

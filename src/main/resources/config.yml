@@ -19,3 +19,26 @@ ability_translate:
   fire: "Пламенный удар"
   lightStrike: "Удар Зевса"
   desiccation: "Яд разложения"
+
+allowed_weapon_types:
+  - netherite_sword
+  - diamond_sword
+  - iron_sword
+  - golden_sword
+  - stone_sword
+  - wooden_sword
+  - netherite_axe
+  - diamond_axe
+  - iron_axe
+  - golden_axe
+  - stone_axe
+  - wooden_axe
+  - trident
+  - mace
+  - bow
+  - crossbow
+
+ability_chance:
+  fire: 0.7
+  lightStrike: 0.1
+  desiccation: 0.6
