@@ -68,6 +68,7 @@ public class WeaponManager implements Listener {
         addAbility(new LightStrike().getName(), "legendary", new LightStrike());
         addAbility(new DesiccationAbility().getName(), "uncommon", new DesiccationAbility());
         addAbility(new FreezeAbility().getName(), "epic", new FreezeAbility());
+        addAbility(new BloodLust().getName(), "uncommon", new BloodLust());
     }
 
     // Метод для добавления способностей к оружию
