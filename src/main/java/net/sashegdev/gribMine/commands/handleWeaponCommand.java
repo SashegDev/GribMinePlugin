@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.*;
 
 import java.util.*;
 public class handleWeaponCommand {
+    //TODO: сделать подсказки команды
     public handleWeaponCommand(CommandSender sender, String[] args) {
         switch (args[1].toLowerCase()) {
             case "get":
@@ -69,6 +70,9 @@ public class handleWeaponCommand {
                 }
                 break;
             case "reassemble":
+                /*
+                TODO: шансы в конфиг)
+                 */
                 // Логика для переоснащения оружия
                 sender.sendMessage("Перековка оружия...");
                 try {

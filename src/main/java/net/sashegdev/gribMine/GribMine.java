@@ -150,6 +150,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        //TODO: сделать подсказки команды
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
                 sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");

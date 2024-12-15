@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class FireAbility extends WeaponAbility {
+    //TODO: починить приколы с поджогом, так как ебучий поджог работает неправильно
     public FireAbility() {
         super("fire", "Пламенный удар", 0.7); // Название и шанс срабатывания 70%
     }

@@ -25,6 +25,7 @@ public class WeaponManager implements Listener {
     private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
 
     // Список допустимых типов оружия
+    //TODO: перенести этот лист в конфиг
     private static final List<String> allowedWeaponTypes = List.of(
             "netherite_sword",
             "diamond_sword",
@@ -56,6 +57,11 @@ public class WeaponManager implements Listener {
         weaponAbilitiesForRarity.put("rare", new ArrayList<>());
         weaponAbilitiesForRarity.put("epic", new ArrayList<>());
         weaponAbilitiesForRarity.put("legendary", new ArrayList<>());
+
+        /*TODO:
+           добавить возможность через конфиг включать/выключать возможность выпадения способки
+           так же сделать так что бы шанс активации, рарность можно было настроить через конфиг
+         */
 
         addAbility(new FireAbility().getName(), "rare", new FireAbility());
         addAbility(new LightStrike().getName(), "legendary", new LightStrike());

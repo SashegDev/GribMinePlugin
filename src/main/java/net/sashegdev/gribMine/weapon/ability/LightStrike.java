@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
 
 public class LightStrike extends WeaponAbility {
+    //TODO: реализовать прикол когда партиклы будут видны с людой дистанции
 
     public LightStrike() {
         super("lightStrike", "Удар Зевса", 1);
