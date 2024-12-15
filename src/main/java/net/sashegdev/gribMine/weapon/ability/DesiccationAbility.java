@@ -8,7 +8,7 @@ import org.bukkit.*;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class DesiccationAbility extends WeaponAbility {
-    public DesiccationAbility() { super("desiccationde", "Яд разложения", GribMine.getMineConfig().getDouble("ability_chance.desiccation")); }
+    public DesiccationAbility() { super("desiccation", "Яд разложения", GribMine.getMineConfig().getDouble("ability_chance.desiccation")); }
 
     @Override
     public void activate(Player player, Entity entity) {
