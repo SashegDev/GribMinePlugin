@@ -165,7 +165,6 @@ public class WeaponManager implements Listener {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
         lore.add("Способность: " + passiveAbility);
-        lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + rarity));
         return lore;
     }
 

@@ -11,6 +11,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.Material;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class LightStrike extends WeaponAbility {
     //TODO: реализовать прикол когда партиклы будут видны с людой дистанции
@@ -21,6 +23,8 @@ public class LightStrike extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
+
+        player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
 
         // Создаем удар молнии
         entity.getWorld().spawn(entity.getLocation(), LightningStrike.class);
