@@ -40,6 +40,8 @@ public class FireAbility extends WeaponAbility {
                         }
                     }
                 } else {
+                    igniteEntity(target);
+                    target.setFireTicks(100);
                     for (Entity entity : target.getNearbyEntities(3, 2, 3)) { // 3 блока в радиусе
                         if (entity.getLocation().distance(targetLocation) <= 3) {
                             igniteEntity(entity);
