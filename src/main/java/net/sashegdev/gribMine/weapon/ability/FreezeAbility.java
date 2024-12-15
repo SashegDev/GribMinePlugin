@@ -2,6 +2,7 @@ package net.sashegdev.gribMine.weapon.ability;
 
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
+import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -10,10 +11,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class FreezeAbility extends WeaponAbility {
 
-    private Plugin GribMine;
+
 
     public FreezeAbility() {
-        super("freezeAbility", "Ледяной Мост", 0.3);
+        super("freezeAbility", "Ледяной Мост", GribMine.getMineConfig().getDouble("ability_chance.freeze"));
     }
 
     @Override
@@ -61,6 +62,6 @@ public class FreezeAbility extends WeaponAbility {
 
                 duration--; // Уменьшаем оставшееся время
             }
-        }.runTaskTimer(GribMine, 0, 1);
+        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 1);
     }
 }

@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.weapon;
 
 import net.sashegdev.gribMine.weapon.ability.*;
+import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
@@ -159,10 +160,11 @@ public class WeaponManager implements Listener {
     }
 
     //TODO: нормальную апишку для лора, + добавление цветов для редкостей/абилок
-    private List<String> createLoreWithRarity(String rarity, String passiveAbility) {
+    private static List<String> createLoreWithRarity(String rarity, String passiveAbility) {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
         lore.add("Способность: " + passiveAbility);
+        lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + rarity));
         return lore;
     }
 

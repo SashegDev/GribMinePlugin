@@ -14,12 +14,6 @@ damage_mod:
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
 
-
-ability_translate:
-  fire: "Пламенный удар"
-  lightStrike: "Удар Зевса"
-  desiccation: "Яд разложения"
-
 allowed_weapon_types:
   - netherite_sword
   - diamond_sword
@@ -42,3 +36,4 @@ ability_chance:
   fire: 0.7
   lightStrike: 0.1
   desiccation: 0.6
+  freeze: 0.3
