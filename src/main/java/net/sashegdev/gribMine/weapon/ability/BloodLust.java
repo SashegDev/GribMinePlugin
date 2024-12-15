@@ -18,8 +18,10 @@ public class BloodLust extends WeaponAbility {
     @Override
     public void activate(Player player, Entity entity) {
         player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 2, 0, true, false, false));
-        player.getWorld().spawnParticle(Particle.DRIPPING_LAVA, player.getLocation().add(0,1,0), 120,0.25 ,0.5, 0.25,0.3);
+        player.getWorld().spawnParticle(Particle.LANDING_LAVA, player.getLocation().add(0,1,0), 60,0.25 ,0.5, 0.25,0.6);
+        player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION, player.getLocation().add(0,1,0), 60,0.25 ,0.5, 0.25,0.013);
         player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, entity.getLocation().add(0,1,0), 30,0.25 ,0.5, 0.25, 0.3);
+        player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0,1,0), 60,0.25 ,0.5, 0.25,0.013);
 
         if (entity instanceof Player) {
             Player targetPlayer = (Player) entity;
