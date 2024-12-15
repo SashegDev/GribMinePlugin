@@ -20,8 +20,7 @@ public class summon {
                             new airdropMain(p);
                         }
                     }
-                }
-                if (args[2].equals("atme")) {
+                } else if (args[2].equals("atme")) {
                     sender.sendMessage("Генерация аирдропа...");
                     if (sender.getServer().getOnlinePlayers().isEmpty()) {
                         if (sender.getServer().getOnlinePlayers() instanceof ArrayList) {
