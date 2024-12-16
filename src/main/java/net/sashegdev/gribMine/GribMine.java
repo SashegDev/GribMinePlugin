@@ -75,7 +75,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         Entity damager = event.getDamager();
         if (damager instanceof Player) {
             Player player = (Player) damager;
-            logger.info("player attacked ponos!");
+            //logger.info("player attacked ponos!");
 
             ItemStack weapon = player.getInventory().getItemInMainHand();
             ItemMeta weaponMeta = weapon.getItemMeta();
@@ -101,8 +101,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
                         if (ability != null) {
                             if (Math.random() < ability.getChance()) {
-                                logger.info("Сработала способка!");
-                                ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+                                    //logger.info("Сработала способка!");
+                                    ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                }
                             }
                         } else {
                             logger.warning("Способность не найдена: " + passiveAbility);
@@ -115,7 +117,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             Entity shooter = (Entity) arrow.getShooter();
             if (shooter instanceof Player) {
                 Player player = (Player) shooter;
-                logger.info("player shot an arrow!");
+                //logger.info("player shot an arrow!");
 
                 ItemStack weapon = player.getInventory().getItemInMainHand();
                 ItemMeta weaponMeta = weapon.getItemMeta();
@@ -141,8 +143,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                             WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
                             if (ability != null) {
                                 if (Math.random() < ability.getChance()) {
-                                    logger.info("Сработала способка от стрелы!");
-                                    ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                    if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+                                        //logger.info("Сработала способка от стрелы!");
+                                        ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                    }
                                 }
                             } else {
                                 logger.warning("Способность не найдена: " + passiveAbility);
