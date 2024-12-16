@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine.weapon;
 
+import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -24,29 +25,8 @@ public class WeaponManager implements Listener {
     private static final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity = new HashMap<>(); // Хранит способности для каждого оружия
     private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
 
-    // Список допустимых типов оружия
-    //TODO: перенести этот лист в конфиг
-    private static final List<String> allowedWeaponTypes = List.of(
-            "netherite_sword",
-            "diamond_sword",
-            "iron_sword",
-            "golden_sword",
-            "stone_sword",
-            "wooden_sword",
-
-            "netherite_axe",
-            "diamond_axe",
-            "iron_axe",
-            "golden_axe",
-            "stone_axe",
-            "wooden_axe",
-
-            "trident",
-            "mace",
-
-            "bow",
-            "crossbow"
-    ); // Добавьте сюда допустимые типы оружия
+    // Список допустимых типов оружия (ТЕПЕРЬ В КОНФИГЕ)
+    private static final List<String> allowedWeaponTypes = GribMine.getMineConfig().getStringList("allowed_weapon_types");
 
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         this.rarityList = rarityList;

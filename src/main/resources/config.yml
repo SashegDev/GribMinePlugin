@@ -14,6 +14,7 @@ damage_mod:
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
 
+# ну.... по идее это должно работать
 allowed_weapon_types:
   - netherite_sword
   - diamond_sword
@@ -32,6 +33,7 @@ allowed_weapon_types:
   - bow
   - crossbow
 
+# шансы срабатывания абилок, указываются как 0.1 - 10%, 1.0 - 100%
 ability_chance:
   fire: 0.7
   lightStrike: 0.1
