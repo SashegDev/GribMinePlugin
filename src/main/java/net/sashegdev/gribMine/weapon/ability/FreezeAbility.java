@@ -18,9 +18,11 @@ public class FreezeAbility extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        entity.setFreezeTicks(20 * 20);
-        spawnBridgeParticles(player, entity);
-        player.setCooldown(player.getItemInUse().getType(),5*20);
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            entity.setFreezeTicks(20 * 20);
+            spawnBridgeParticles(player, entity);
+            player.setCooldown(player.getInventory().getItemInMainHand(), 5 * 20);
+        }
     }
 
     private void spawnBridgeParticles(Player player, Entity entity) {

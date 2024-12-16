@@ -23,29 +23,31 @@ public class LightStrike extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        player.setCooldown(player.getItemInUse().getType(),20*20);
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            player.setCooldown(player.getInventory().getItemInMainHand(), 20 * 20);
 
-        player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
 
-        // Создаем удар молнии
-        entity.getWorld().spawn(entity.getLocation(), LightningStrike.class);
+            // Создаем удар молнии
+            entity.getWorld().spawn(entity.getLocation(), LightningStrike.class);
 
-        // Создаем взрыв
-        entity.getWorld().createExplosion(entity.getLocation(), 7);
+            // Создаем взрыв
+            entity.getWorld().createExplosion(entity.getLocation(), 7);
 
-        // Спавним частицы
-        entity.getWorld().spawnParticle(Particle.END_ROD, entity.getLocation(), 650, 0.5, 0.5, 0.5, 0.8);
-        entity.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, entity.getLocation(), 500, 0.5, 0.5, 0.5, 0.7);
+            // Спавним частицы
+            entity.getWorld().spawnParticle(Particle.END_ROD, entity.getLocation(), 650, 0.5, 0.5, 0.5, 0.8);
+            entity.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, entity.getLocation(), 500, 0.5, 0.5, 0.5, 0.7);
 
-        // Получаем координаты удара молнии
-        Location strikeLocation = entity.getLocation();
+            // Получаем координаты удара молнии
+            Location strikeLocation = entity.getLocation();
 
-        // Проходим по всем игрокам в мире
-        for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
-            // Проверяем расстояние до игрока
-            if (nearbyPlayer.getLocation().distance(strikeLocation) <= 300) {
-                // Воспроизводим звук
-                nearbyPlayer.playSound(strikeLocation, Sound.ENTITY_WITHER_SPAWN, 0.0f, 1.0f); // Питч 1.0, громкость 1.0
+            // Проходим по всем игрокам в мире
+            for (Player nearbyPlayer : Bukkit.getOnlinePlayers()) {
+                // Проверяем расстояние до игрока
+                if (nearbyPlayer.getLocation().distance(strikeLocation) <= 300) {
+                    // Воспроизводим звук
+                    nearbyPlayer.playSound(strikeLocation, Sound.ENTITY_WITHER_SPAWN, 0.0f, 1.0f); // Питч 1.0, громкость 1.0
+                }
             }
         }
     }

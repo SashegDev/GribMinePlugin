@@ -161,13 +161,15 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             if (e.getItem().getType() == Material.AMETHYST_SHARD && e.getItem().getItemMeta().getLore() == null
                 && e.getItem().getItemMeta().getDisplayName().equals("бог, дай мне че-нить")) {
                 if (!e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
-                    int max_list = Bukkit.getOnlinePlayers().size();
-                    ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
-                    Random rand = new Random();
-                    int chosen = rand.nextInt(max_list);
-                    new airdropMain(player_list.get(chosen), 1,1);
-                    e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 300);
-                    e.getPlayer().getInventory().removeItem(new ItemStack(e.getItem().getType(),1));
+                    if (e.getPlayer().getCooldown(Material.AMETHYST_SHARD) <= 1) {
+                        int max_list = Bukkit.getOnlinePlayers().size();
+                        ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
+                        Random rand = new Random();
+                        int chosen = rand.nextInt(max_list);
+                        new airdropMain(player_list.get(chosen), 1, 1);
+                        e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 300);
+                        e.getPlayer().getInventory().removeItem(new ItemStack(e.getItem().getType(), 1));
+                    }
                 }
             }
         }
