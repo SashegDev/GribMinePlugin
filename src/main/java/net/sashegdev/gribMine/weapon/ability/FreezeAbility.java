@@ -20,6 +20,7 @@ public class FreezeAbility extends WeaponAbility {
     public void activate(Player player, Entity entity) {
         entity.setFreezeTicks(20 * 20);
         spawnBridgeParticles(player, entity);
+        player.setCooldown(player.getItemInUse().getType(),5*20);
     }
 
     private void spawnBridgeParticles(Player player, Entity entity) {
@@ -54,10 +55,11 @@ public class FreezeAbility extends WeaponAbility {
                         double particleY = startY + deltaY * ratio;
                         double particleZ = startZ + deltaZ * ratio;
 
-                        player.getWorld().spawnParticle(Particle.SNOWFLAKE, particleX, particleY, particleZ, 1, 0, 0, 0, 0);
+                        player.getWorld().spawnParticle(Particle.PORTAL, particleX, particleY, particleZ, 1, 0, 0, 0, 0);
                     }
                 } else {
                     player.getWorld().spawnParticle(Particle.SNOWFLAKE, entity.getLocation(), 460, 0, 0, 0, 0.24);
+                    player.getWorld().spawnParticle(Particle.REVERSE_PORTAL, entity.getLocation(), 460, 0, 0, 0, 0.25);
                     cancel();
                 }
 

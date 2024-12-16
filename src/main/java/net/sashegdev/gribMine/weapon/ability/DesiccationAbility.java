@@ -12,6 +12,7 @@ public class DesiccationAbility extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
+        player.setCooldown(player.getItemInUse().getType(),5*20);
 
         Location location = entity.getLocation();
         LivingEntity le = (LivingEntity) entity;

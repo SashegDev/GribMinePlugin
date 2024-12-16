@@ -22,7 +22,7 @@ public class airdropMain {
     private final LivingEntity armor;
     public airdropMain(@NotNull Player p) {
         this.location = p.getLocation().add(new Random().nextInt(-10000, 10000), 0, new Random().nextInt(-10000, 10000));
-        this.location.setY(p.getLocation().getY()+10000);
+        this.location.setY(p.getLocation().getY()+100);
 
         armor = p.getWorld().spawn(location, ArmorStand.class);
         armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, PotionEffect.INFINITE_DURATION, 1));
@@ -34,10 +34,13 @@ public class airdropMain {
 
     public airdropMain(@NotNull Player p, int w, int h) {
         this.location = p.getLocation().add(new Random().nextInt(-w, w), 0, new Random().nextInt(-h, h));
-        this.location.setY(p.getLocation().getY()+10000);
+        this.location.setY(p.getLocation().getY()+100);
+        this.location.setX(this.location.getBlockX());
+        this.location.setZ(this.location.getBlockZ());
+        System.out.println("Airdrop! X:"+location.getX()+" Z:"+location.getZ());
 
         armor = p.getWorld().spawn(location, ArmorStand.class);
-        armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, PotionEffect.INFINITE_DURATION, 1));
+        armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, PotionEffect.INFINITE_DURATION, 12));
 
         airdropList.add(this);
 
@@ -48,7 +51,15 @@ public class airdropMain {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (armor.getLocation().add(0, -1, 0).getBlock().getType() != Material.AIR) {
+                if (armor.getLocation().add(0, -1, 0).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(1, -1, 0).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(0, -1, 1).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(-1, -1, 0).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(0, -1, -1).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(1, -1, 1).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(-1, -1, -1).getBlock().getType() != Material.AIR ||
+                        armor.getLocation().add(1, -1, 1).getBlock().getType() != Material.AIR) {
+
                     location = armor.getLocation();
                     World w = armor.getWorld();
                     armor.remove();

@@ -17,6 +17,7 @@ public class FireAbility extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity target) {
+        player.setCooldown(player.getItemInUse().getType(),5*20);
         // Получаем координаты цели
         Location targetLocation = target.getLocation();
 

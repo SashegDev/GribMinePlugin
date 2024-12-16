@@ -4,6 +4,7 @@ import net.sashegdev.gribMine.airdrop.commands.summon;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.airdrop.airdropMain;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -154,17 +155,19 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     }
 
     @EventHandler
-    public void leftClickHandler(PlayerInteractEvent e) {
+    public void ClickHandler(PlayerInteractEvent e) {
         if (e.getItem() == null) return;
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
-            if (e.getItem().getType() == Material.AMETHYST_SHARD && !e.getItem().getItemMeta().getLore().equals(new ArrayList<String>())
+            if (e.getItem().getType() == Material.AMETHYST_SHARD && e.getItem().getItemMeta().getLore() == null
                 && e.getItem().getItemMeta().getDisplayName().equals("бог, дай мне че-нить")) {
-                if (e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
-                    if (e.getPlayer().getServer().getOnlinePlayers() instanceof ArrayList) {
-                        ArrayList<Player> players = (ArrayList<Player>) e.getPlayer().getServer().getOnlinePlayers();
-                        Player p = players.get(new Random().nextInt(0, players.size()));
-                        new airdropMain(p);
-                    }
+                if (!e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
+                    int max_list = Bukkit.getOnlinePlayers().size();
+                    ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
+                    Random rand = new Random();
+                    int chosen = rand.nextInt(max_list);
+                    new airdropMain(player_list.get(chosen), 1,1);
+                    e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 300);
+                    e.getPlayer().getInventory().removeItem(new ItemStack(e.getItem().getType(),1));
                 }
             }
         }

@@ -23,6 +23,7 @@ public class LightStrike extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
+        player.setCooldown(player.getItemInUse().getType(),20*20);
 
         player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
 

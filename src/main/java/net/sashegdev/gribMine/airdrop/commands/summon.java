@@ -14,20 +14,20 @@ public class summon {
                 if (args.length == 2) {
                     sender.sendMessage("Генерация аирдропа...");
                     if (!sender.getServer().getOnlinePlayers().isEmpty()) {
-                        if (sender.getServer().getOnlinePlayers() instanceof ArrayList) {
-                            ArrayList<Player> players = (ArrayList<Player>) sender.getServer().getOnlinePlayers();
-                            Player p = players.get(new Random().nextInt(0, players.size()));
-                            new airdropMain(p);
-                        }
+                        int max_list = Bukkit.getOnlinePlayers().size();
+                        ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
+                        Random rand = new Random();
+                        int chosen = rand.nextInt(max_list);
+                        new airdropMain(player_list.get(chosen), 1, 1);
                     }
                 } else if (args[2].equals("atme")) {
                     sender.sendMessage("Генерация аирдропа...");
                     if (!sender.getServer().getOnlinePlayers().isEmpty()) {
-                        if (sender.getServer().getOnlinePlayers() instanceof ArrayList) {
-                            ArrayList<Player> players = (ArrayList<Player>) sender.getServer().getOnlinePlayers();
-                            Player p = players.get(new Random().nextInt(0, players.size()));
-                            new airdropMain(p, 1, 1);
-                        }
+                        int max_list = Bukkit.getOnlinePlayers().size();
+                        ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
+                        Random rand = new Random();
+                        int chosen = rand.nextInt(max_list);
+                        new airdropMain(player_list.get(chosen), 1, 1);
                     }
                 }
         }
