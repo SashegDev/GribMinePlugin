@@ -1,18 +1,18 @@
 package net.sashegdev.gribMine.commands;
 
-import net.sashegdev.gribMine.GribMine;
-import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
-import net.sashegdev.gribMine.exceptions.*;
+import net.sashegdev.gribMine.weapon.WeaponManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 public class handleWeaponCommand {
     public handleWeaponCommand(CommandSender sender, String[] args) {
         switch (args[1].toLowerCase()) {

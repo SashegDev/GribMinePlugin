@@ -1,11 +1,12 @@
 package net.sashegdev.gribMine.airdrop.commands;
 
-import net.sashegdev.gribMine.airdrop.*;
-import org.bukkit.command.*;
-import org.bukkit.*;
-import org.bukkit.entity.*;
+import net.sashegdev.gribMine.airdrop.airdropMain;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 public class summon {
 
     public summon(CommandSender sender, String[] args) {

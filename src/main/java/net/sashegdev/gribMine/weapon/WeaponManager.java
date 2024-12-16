@@ -1,7 +1,6 @@
 package net.sashegdev.gribMine.weapon;
 
 import net.sashegdev.gribMine.weapon.ability.*;
-import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;

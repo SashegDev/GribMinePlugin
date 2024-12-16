@@ -1,10 +1,15 @@
 package net.sashegdev.gribMine.weapon.ability;
 
-import net.sashegdev.gribMine.weapon.*;
 import net.sashegdev.gribMine.GribMine;
-import org.bukkit.entity.*;
-import org.bukkit.potion.*;
-import org.bukkit.*;
+import net.sashegdev.gribMine.weapon.WeaponAbility;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class DesiccationAbility extends WeaponAbility {

@@ -1,16 +1,14 @@
 package net.sashegdev.gribMine.weapon.ability;
 
-import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
+import net.sashegdev.gribMine.weapon.WeaponAbility;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.LightningStrike;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -24,7 +22,7 @@ public class LightStrike extends WeaponAbility {
     @Override
     public void activate(Player player, Entity entity) {
         if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
-            player.setCooldown(player.getInventory().getItemInMainHand(), 20 * 20);
+            player.setCooldown(player.getInventory().getItemInMainHand(), 40 * 20);
 
             player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
 
