@@ -23,23 +23,28 @@ public class BloodLust extends WeaponAbility {
     public void activate(Player player, Entity entity) {
         if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
             player.setCooldown(player.getInventory().getItemInMainHand(), 5 * 20);
+            if (!entity.isDead()) {
 
-            player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 2, 0, true, false, true));
-            player.getWorld().spawnParticle(Particle.LANDING_LAVA, player.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.6);
-            player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION, player.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.013);
-            player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, entity.getLocation().add(0, 1, 0), 30, 0.25, 0.5, 0.25, 0.3);
-            player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.013);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 2, 0, true, false, true));
+                player.getWorld().spawnParticle(Particle.LANDING_LAVA, player.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.6);
+                player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION, player.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.013);
+                player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, entity.getLocation().add(0, 1, 0), 30, 0.25, 0.5, 0.25, 0.3);
+                player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0, 1, 0), 60, 0.25, 0.5, 0.25, 0.013);
 
-            babibabu(player, entity);
+                babibabu(player, entity);
 
-            if (entity instanceof Player) {
-                Player targetPlayer = (Player) entity;
-                targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
-            } else {
-                if (entity instanceof LivingEntity) {
-                    LivingEntity targetEntity = (LivingEntity) entity;
-                    targetEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
+                if (entity instanceof Player) {
+                    Player targetPlayer = (Player) entity;
+                    targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
+                } else {
+                    if (entity instanceof LivingEntity) {
+                        LivingEntity targetEntity = (LivingEntity) entity;
+                        targetEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
+                    }
                 }
+            } else {
+                player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0, 1, 0), 140, 0.5, 0.5, 0.5, 0.025);
+                player.getWorld().spawnParticle(Particle.FLAME, entity.getLocation().add(0, 1, 0), 70, 0.5, 0.5, 0.5, 0.013);
             }
         }
     }
@@ -70,9 +75,6 @@ public class BloodLust extends WeaponAbility {
                         // Если эффекта нет, добавляем его
                         player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, regenerationDuration, 0, true, false, true), true);
                     }
-                } else {
-                    player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0, 1, 0), 140, 0.5, 0.5, 0.5, 0.025);
-                    player.getWorld().spawnParticle(Particle.FLAME, entity.getLocation().add(0, 1, 0), 70, 0.5, 0.5, 0.5, 0.013);
                 }
                 duration--;
             }
