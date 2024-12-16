@@ -70,6 +70,9 @@ public class BloodLust extends WeaponAbility {
                         // Если эффекта нет, добавляем его
                         player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, regenerationDuration, 0, true, false, true), true);
                     }
+                } else {
+                    player.getWorld().spawnParticle(Particle.TRIAL_SPAWNER_DETECTION_OMINOUS, entity.getLocation().add(0, 1, 0), 140, 0.5, 0.5, 0.5, 0.025);
+                    player.getWorld().spawnParticle(Particle.FLAME, entity.getLocation().add(0, 1, 0), 70, 0.5, 0.5, 0.5, 0.013);
                 }
                 duration--;
             }
