@@ -5,6 +5,7 @@ import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -40,11 +41,17 @@ public class FreezeAbility extends WeaponAbility {
 
                     // Получаем координаты игрока и цели
                     double startX = player.getLocation().getX();
-                    double startY = player.getLocation().getY() + 1;
+                    double startY = player.getLocation().getY() + 1; // Позиция игрока
                     double startZ = player.getLocation().getZ();
+                    double endY = entity.getLocation().getY() +1;
                     double endX = entity.getLocation().getX();
-                    double endY = entity.getLocation().getY() + 1;
                     double endZ = entity.getLocation().getZ();
+                    if (entity instanceof LivingEntity livingEntity && (!(entity instanceof Player))) {
+                        endX = livingEntity.getEyeLocation().getX();
+                        endY = livingEntity.getEyeLocation().getY();
+                        endZ = livingEntity.getEyeLocation().getZ();
+                    }
+
 
                     // Вычисляем вектор между двумя точками
                     double deltaX = endX - startX;
