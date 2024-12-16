@@ -269,6 +269,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         completions.add("ability=" + abilityName);
                     }
                 }
+                //TODO: починить эту хуету, так как /gribmine airdrop summon не показывает еще atme
             } else if (args.length == 2 && args[0].equalsIgnoreCase("airdrop")) {
                 completions.add("summon");
             } else if (args.length == 3 && args[0].equalsIgnoreCase("summon")) {

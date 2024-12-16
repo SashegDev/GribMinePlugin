@@ -52,6 +52,7 @@ public class airdropMain {
     }
 
     public void activation() {
+        //TODO: починить рофлы с травой/цветами   так же добавить таймер 5 минут по истечению которого будет открыт дроп
         new BukkitRunnable() {
             @Override
             public void run() {

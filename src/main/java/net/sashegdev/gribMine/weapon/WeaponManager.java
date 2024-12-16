@@ -61,6 +61,7 @@ public class WeaponManager implements Listener {
         return weaponAbilities.get(name).getName();
     }
 
+    //TODO: заменить на другой ивент так как этот хуйня, лучше конешн что бы вообще проверял каждый тик у каждого игрока, но тогда тпс упадет
     @EventHandler
     public void PickUpEvent(PlayerItemHeldEvent event) {
         Player player = event.getPlayer();

@@ -58,6 +58,7 @@ public class FreezeAbility extends WeaponAbility {
                         double particleY = startY + deltaY * ratio;
                         double particleZ = startZ + deltaZ * ratio;
 
+                        //TODO: поставить на этот вывод партиклов другой тип, так как текущий хуйня
                         player.getWorld().spawnParticle(Particle.PORTAL, particleX, particleY, particleZ, 1, 0, 0, 0, 0);
                     }
                 } else {
