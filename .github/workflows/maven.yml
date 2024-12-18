@@ -29,7 +29,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v1.0.0  # Замените на вашу версию
-        release_name: Release v1.0.0  # Замените на ваше имя релиза
+        name: Release v1.0.0  # Замените на ваше имя релиза
         body: |
           Changes in this release:
           - Your changes here
