@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -115,7 +116,7 @@ public class airdropMain implements Listener {
                     if (blockData instanceof Directional directional) {
                         directional.setFacing(BlockFace.WEST); // Устанавливаем направление на запад
                         location.getBlock().setBlockData(directional);
-                        loot.addLoot(location.getBlock());
+                        airdropLoot.addLoot(location.getBlock());
                     }
 
                     cancel();
@@ -126,3 +127,4 @@ public class airdropMain implements Listener {
     public Location getLocation() { return location; }
     public static List<airdropMain> getAirdropList() { return airdropList; }
 }
+
