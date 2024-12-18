@@ -1,5 +1,5 @@
 name: GribMine
-version: 1.0.2
+version: ${plugin.version}
 main: net.sashegdev.gribMine.GribMine
 api-version: '1.21'
 prefix: GribMinePlugin

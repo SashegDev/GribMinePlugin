@@ -3,6 +3,7 @@ package net.sashegdev.gribMine.weapon.ability;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
@@ -12,8 +13,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Objects;
+
 public class DesiccationAbility extends WeaponAbility {
-    public DesiccationAbility() { super("desiccation", "Яд разложения", GribMine.getMineConfig().getDouble("ability_chance.desiccation")); }
+    public DesiccationAbility() { super("desiccation", ChatColor.GREEN+""+ChatColor.BOLD+"Яд разложения", GribMine.getMineConfig().getDouble("ability_chance.desiccation")); }
 
     @Override
     public void activate(Player player, Entity entity) {
@@ -31,9 +34,6 @@ public class DesiccationAbility extends WeaponAbility {
                 public void run() {
                     for (Entity e : player.getNearbyEntities(3, 2, 3)) {
                         if (e.getLocation().distance(location) < 3) {
-                            //if ((e instanceof Player p)) {
-                            //if (p.equals(player)) continue;
-                            //}
                             if (e instanceof LivingEntity) {
                                 LivingEntity le = (LivingEntity) e;
                                 le.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 2, 1));
@@ -52,7 +52,7 @@ public class DesiccationAbility extends WeaponAbility {
                         cancel();
                     }
                 }
-            }.runTaskTimer(Bukkit.getPluginManager().getPlugin("GribMine"), 0, 5);
+            }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 5);
         }
     }
 }

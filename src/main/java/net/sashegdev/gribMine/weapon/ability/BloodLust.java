@@ -3,6 +3,7 @@ package net.sashegdev.gribMine.weapon.ability;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class BloodLust extends WeaponAbility {
 
     public BloodLust() {
-        super("bloodlust", "Жажда Крови", GribMine.getMineConfig().getDouble("ability_chance.bloodlust"));
+        super("bloodlust", ChatColor.DARK_RED+""+ChatColor.BOLD+"Жажда Крови", GribMine.getMineConfig().getDouble("ability_chance.bloodlust"));
     }
 
     @Override
@@ -33,12 +34,10 @@ public class BloodLust extends WeaponAbility {
 
                 babibabu(player, entity);
 
-                if (entity instanceof Player) {
-                    Player targetPlayer = (Player) entity;
+                if (entity instanceof Player targetPlayer) {
                     targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
                 } else {
-                    if (entity instanceof LivingEntity) {
-                        LivingEntity targetEntity = (LivingEntity) entity;
+                    if (entity instanceof LivingEntity targetEntity) {
                         targetEntity.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 20 * 4, 1, true, false, false));
                     }
                 }
@@ -52,7 +51,7 @@ public class BloodLust extends WeaponAbility {
     private void babibabu(Player player, Entity entity) {
         new BukkitRunnable() {
             int duration = 4; // Количество тиков (4 тика = 4 секунды)
-            int regenerationDuration = 40; // Длительность эффекта регенерации в тиках (2 секунды)
+            final int regenerationDuration = 40; // Длительность эффекта регенерации в тиках (2 секунды)
 
             @Override
             public void run() {

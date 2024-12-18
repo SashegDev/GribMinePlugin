@@ -35,6 +35,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     static FileConfiguration config;
 
     private WeaponManager weaponManager;
+    private airdropMain airdropMain;
 
     @Override
     public void onEnable() {
@@ -53,9 +54,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
         // Регистрируем слушатели
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(weaponManager, this); // Регистрация WeaponManager как слушателя
+        getServer().getPluginManager().registerEvents(weaponManager, this);
+        getServer().getPluginManager().registerEvents(airdropMain,this);
 
-        // Логирование
         logger.info("GribMine Plugin initialized ;)");
         logger.info("Версия плагина: " + getDescription().getVersion());
         logger.info("===RARITY_LIST===");
@@ -68,8 +69,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             logger.info("damage_mod." + rarity + ": " + modifier);
         }
 
-        // Регистрируем команды
         getCommand("gribadmin").setExecutor(this);
+
+        //чисто для того что бы чекать инвент каждый тик вместо кривого листенера
+        WeaponManager.ChangeWeapon();
     }
 
     @EventHandler
@@ -114,11 +117,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                 }
             }
-        } else if (damager instanceof Arrow) {
-            Arrow arrow = (Arrow) damager;
+        } else if (damager instanceof Arrow arrow) {
             Entity shooter = (Entity) arrow.getShooter();
-            if (shooter instanceof Player) {
-                Player player = (Player) shooter;
+            if (shooter instanceof Player player) {
                 //logger.info("player shot an arrow!");
 
                 ItemStack weapon = player.getInventory().getItemInMainHand();

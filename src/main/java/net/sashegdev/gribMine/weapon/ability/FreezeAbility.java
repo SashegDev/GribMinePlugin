@@ -3,6 +3,7 @@ package net.sashegdev.gribMine.weapon.ability;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -13,7 +14,7 @@ import java.util.Objects;
 public class FreezeAbility extends WeaponAbility {
 
     public FreezeAbility() {
-        super("freeze", "Ледяной удар", GribMine.getMineConfig().getDouble("ability_chance.freeze"));
+        super("freeze", ChatColor.AQUA+""+ChatColor.BOLD+"Ледяной удар", GribMine.getMineConfig().getDouble("ability_chance.freeze"));
     }
 
     @Override

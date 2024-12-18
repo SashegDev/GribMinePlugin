@@ -2,17 +2,14 @@ package net.sashegdev.gribMine.weapon.ability;
 
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class FireAbility extends WeaponAbility {
     public FireAbility() {
-        super("fire", "Пламенный удар", GribMine.getMineConfig().getDouble("ability_chance.fire"));
+        super("fire", ChatColor.RED+""+ChatColor.BOLD+"Пламенный удар", GribMine.getMineConfig().getDouble("ability_chance.fire"));
     }
 
     @Override

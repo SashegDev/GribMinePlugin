@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,17 +82,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("common")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: common");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: common", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -101,17 +92,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("uncommon")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: uncommon");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: uncommon", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -121,17 +102,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("rare")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: rare");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: rare", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -141,17 +112,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("epic")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: epic");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: epic", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -161,17 +122,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("legendary")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: legendary");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: legendary", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -219,5 +170,21 @@ public class handleWeaponCommand {
                 sender.sendMessage(ChatColor.RED+"Неизвестная подкоманда для weapon.");
                 break;
         }
+    }
+
+    @NotNull
+    private static ItemMeta getItemMeta(ItemStack item, String e, WeaponAbility wa) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = item.getItemMeta().getLore();
+
+        if (lore.isEmpty()) {
+            lore.add(e);
+            lore.add("Способность: " + wa.getRussianName());
+        } else {
+            lore.set(1, "Способность: " + wa.getRussianName());
+        }
+
+        meta.setLore(lore);
+        return meta;
     }
 }
