@@ -14,5 +14,29 @@ damage_mod:
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
 
-ability_translate:
-  fire: "Пламенный удар"
+# ну.... по идее это должно работать
+allowed_weapon_types:
+  - netherite_sword
+  - diamond_sword
+  - iron_sword
+  - golden_sword
+  - stone_sword
+  - wooden_sword
+  - netherite_axe
+  - diamond_axe
+  - iron_axe
+  - golden_axe
+  - stone_axe
+  - wooden_axe
+  - trident
+  - mace
+  - bow
+  - crossbow
+
+# шансы срабатывания абилок, указываются как 0.1 - 10%, 1.0 - 100%
+ability_chance:
+  fire: 0.7
+  lightStrike: 0.1
+  desiccation: 0.6
+  freeze: 0.3
+  bloodlust: 0.6

@@ -1,17 +1,19 @@
 package net.sashegdev.gribMine.commands;
 
-import net.sashegdev.gribMine.GribMine;
-import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
-import net.sashegdev.gribMine.exceptions.*;
+import net.sashegdev.gribMine.weapon.WeaponManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 public class handleWeaponCommand {
     public handleWeaponCommand(CommandSender sender, String[] args) {
         switch (args[1].toLowerCase()) {
@@ -20,11 +22,13 @@ public class handleWeaponCommand {
                 try {
                     List<String> lore = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand().getItemMeta().getLore();
                     if (lore != null)
-                        sender.sendMessage(String.join("", lore));
+                        for (String loreline : lore) {
+                            sender.sendMessage(loreline);
+                        }
                     else
                         throw new NullPointerException("Null Pointer in Lore");
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
                 }
                 break;
             case "set":
@@ -33,7 +37,7 @@ public class handleWeaponCommand {
                 try {
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
-                    if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
+                    //if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
                         List<String> lore = new ArrayList<String>();
                         //Хэш для строгого порядка описания на выходе
                         HashMap<String, String> lines = new HashMap<String, String>();
@@ -53,22 +57,23 @@ public class handleWeaponCommand {
 
                         lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")).getRussianName());
 
-                        lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod." + lines.get("rarity"), 1.0));
-
                         meta.setLore(lore);
 
                         item.setItemMeta(meta);
-                    } else {
+                    //} else {
 
-                        throw new ItemTypeException("Wrong type of object");
-                    }
+                        //throw new ItemTypeException("Wrong type of object");
+                    //}
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
-                } catch (ItemTypeException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
+                //} catch (ItemTypeException ex) {
+                    //sender.sendMessage(ex.getMessage());
                 }
                 break;
             case "reassemble":
+                /*
+                TODO: шансы в конфиг)
+                 */
                 // Логика для переоснащения оружия
                 sender.sendMessage("Перековка оружия...");
                 try {
@@ -77,18 +82,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("common")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: common");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod.common", 1.0));
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: common", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -98,18 +92,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("uncommon")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: uncommon");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod.uncommon", 1.0));
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: uncommon", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -119,18 +102,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("rare")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: rare");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod.rare", 1.0));
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: rare", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -140,18 +112,7 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("epic")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: epic");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod.epic", 1.0));
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: epic", wa);
                                 item.setItemMeta(meta);
 
                                 break;
@@ -161,30 +122,24 @@ public class handleWeaponCommand {
                         for (WeaponAbility wa : WeaponManager.getWeaponAbilitiesForRarity("legendary")) {
                             if (Math.random() > 0.5) {
                                 ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
-                                ItemMeta meta = item.getItemMeta();
-                                List<String> lore = item.getItemMeta().getLore();
-
-                                if (lore.isEmpty()) {
-                                    lore.add("Редкость: legendary");
-                                    lore.add("Способность: " + wa.getRussianName());
-                                    lore.add("Модификатор урона: " + GribMine.getMineConfig().getDouble("damage_mod.legendary", 1.0));
-                                } else {
-                                    lore.set(1, "Способность: " + wa.getRussianName());
-                                }
-
-                                meta.setLore(lore);
+                                ItemMeta meta = getItemMeta(item, "Редкость: legendary", wa);
                                 item.setItemMeta(meta);
 
                                 break;
                             }
                         }
+                    } else {
+                        ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
+                        ItemMeta meta = item.getItemMeta();
+                        meta.setLore(new ArrayList<>());
+                        item.setItemMeta(meta);
                     }
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+ex.getMessage());
                 }
                 break;
             case "reset":
-                sender.sendMessage("Сброс информации о оружии...");
+                sender.sendMessage(ChatColor.DARK_GREEN+"Сброс информации о оружии...");
                 try {
                     Player player = sender.getServer().getPlayer(sender.getName());
                     if (player != null) {
@@ -200,20 +155,36 @@ public class handleWeaponCommand {
                                 item.setItemMeta(newMeta);
                             }
 
-                            player.sendMessage("Информация о оружии сброшена.");
+                            player.sendMessage(ChatColor.DARK_GREEN+"Информация о оружии сброшена.");
                         } else {
-                            player.sendMessage("У вас нет предмета в руках.");
+                            player.sendMessage(ChatColor.RED+"У вас нет предмета в руках.");
                         }
                     } else {
-                        sender.sendMessage("Игрок не найден.");
+                        sender.sendMessage(ChatColor.RED+"Игрок не найден.");
                     }
                 } catch (NullPointerException ex) {
-                    sender.sendMessage("Произошла ошибка: " + ex.getMessage());
+                    sender.sendMessage(ChatColor.RED+"Произошла ошибка: " + ex.getMessage());
                 }
                 break;
             default:
-                sender.sendMessage("Неизвестная подкоманда для weapon.");
+                sender.sendMessage(ChatColor.RED+"Неизвестная подкоманда для weapon.");
                 break;
         }
+    }
+
+    @NotNull
+    private static ItemMeta getItemMeta(ItemStack item, String e, WeaponAbility wa) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> lore = item.getItemMeta().getLore();
+
+        if (lore.isEmpty()) {
+            lore.add(e);
+            lore.add("Способность: " + wa.getRussianName());
+        } else {
+            lore.set(1, "Способность: " + wa.getRussianName());
+        }
+
+        meta.setLore(lore);
+        return meta;
     }
 }
