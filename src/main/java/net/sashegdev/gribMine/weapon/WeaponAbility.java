@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 
 public abstract class WeaponAbility {
     private final String name; // Название способности
-    private final double chance; // Шанс срабатывания
+    private double chance; // Шанс срабатывания
     private final String ru_name;
 
     public WeaponAbility(String name,String ru_name, double chance) {
@@ -20,6 +20,10 @@ public abstract class WeaponAbility {
 
     public double getChance() {
         return chance;
+    }
+
+    public void setChance(double val) {
+        chance = val;
     }
     public String getRussianName() { return ru_name; }
 
