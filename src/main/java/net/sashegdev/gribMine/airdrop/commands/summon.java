@@ -18,7 +18,7 @@ public class summon {
                     ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
                     Random rand = new Random();
                     int chosen = rand.nextInt(max_list);
-                    new airdropMain(player_list.get(chosen), 1, 1);
+                    new airdropMain(player_list.get(chosen));
                 }
             } else if (args[2].equals("atme")) {
                 //sender.sendMessage("Генерация аирдропа...");

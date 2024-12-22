@@ -177,6 +177,7 @@ public class handleWeaponCommand {
         ItemMeta meta = item.getItemMeta();
         List<String> lore = item.getItemMeta().getLore();
 
+        assert lore != null;
         if (lore.isEmpty()) {
             lore.add(e);
             lore.add("Способность: " + wa.getRussianName());
@@ -184,6 +185,7 @@ public class handleWeaponCommand {
             lore.set(1, "Способность: " + wa.getRussianName());
         }
 
+        assert meta != null;
         meta.setLore(lore);
         return meta;
     }

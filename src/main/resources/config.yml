@@ -15,6 +15,7 @@ damage_mod:
 #Ну это еще можно менять(ЦИФРЫ)
 
 # ну.... по идее это должно работать
+#НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
 allowed_weapon_types:
   - netherite_sword
   - diamond_sword
@@ -40,3 +41,21 @@ ability_chance:
   desiccation: 0.6
   freeze: 0.3
   bloodlust: 0.6
+
+
+#Вещи, которые выпадают в дропе(этот лист для обычных предемтов, не рарных)
+#НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
+airdrop_items:
+  - diamond
+  - gold_ingot
+  - iron_ingot
+  - acacia_planks
+
+#кол-во выпадаемых оружий в дропе
+AirDropWeaponGenerateNumber: 3
+
+#кол-во ротаций дропа(сколько раз будет код проходит по листу предметов и добавлять случайный дроп)
+AirDropMaxRotations: 5
+
+#кол-во максимального добавления предетов в 1 ротации
+AirDropMaxItemInOneRot: 32
