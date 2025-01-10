@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine.airdrop;
 
+import net.sashegdev.gribMine.GribMine;
 import org.bukkit.*;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -24,12 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+
 public class airdropMain implements Listener {
 
     private Location location;
     private final static List<airdropMain> airdropList = new ArrayList<>();
-
-    private LivingEntity armor;
+    private static LivingEntity armor;
 
     public airdropMain(@NotNull Player p) {
         this(p, 100, 100);
@@ -40,12 +41,7 @@ public class airdropMain implements Listener {
         this.location.setY(p.getLocation().getY() + 100); // Устанавливаем высоту
 
         System.out.println("Airdrop! X:" + location.getX() + " Z:" + location.getZ());
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                armorstandcheck();
-            }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")),0,1);
+        airdropList.add(this);
 
         new BukkitRunnable() {
             @Override
@@ -56,12 +52,13 @@ public class airdropMain implements Listener {
                 armor.setInvulnerable(true); // ArmorStand не получает урона
                 armor.setCustomName(ChatColor.RED + "AirDrop"); // Устанавливаем имя
                 armor.setCustomNameVisible(true); // Имя будет видно игрокам
+                armor.setCanPickupItems(false); // Запретить подбирать предметы
 
                 // Устанавливаем бочку на голову ArmorStand
                 Objects.requireNonNull(armor.getEquipment()).setHelmet(new org.bukkit.inventory.ItemStack(Material.BARREL));
 
-                // Добавляем эффект медленного падения
-                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, PotionEffect.INFINITE_DURATION, 87));
+                // Добавляем эффект максимального медленного падения
+                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 255));
 
                 // Отправляем сообщение всем игрокам
                 for (Player player : Bukkit.getOnlinePlayers()) {
@@ -69,17 +66,64 @@ public class airdropMain implements Listener {
                             "Я увидел самолет...\n" +
                             "И он что-то выбросил...\n" +
                             "Это примерно на:\n" +
-                            "X:" + ChatColor.GOLD + location.getX() + ChatColor.RESET + " Z:" + ChatColor.GOLD + location.getZ()
+                            "X:" + ChatColor.GOLD + location.getBlockX() + ChatColor.RESET + " Z:" + ChatColor.GOLD + location.getBlockZ()
                     );
                 }
             }
         }.runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 20 * 25);
     }
 
-    public void armorstandcheck() {
-        if (armor.isOnGround()) {
-            activation();
+    public static void activate(){
+        // Добавляем лут в бочку
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                addLootToBarrel();
+            }
+        }.runTaskLater(GribMine.getPlugin(GribMine.class),10*20);
+    }
+
+    public airdropMain() {
+    }
+
+    private static void addLootToBarrel() {
+        // Устанавливаем блок на место
+        Block barrelBlock = armor.getLocation().getBlock();
+        barrelBlock.setType(Material.BARREL);
+
+        // Получаем BlockData для бочки и устанавливаем направление
+        BlockData blockData = barrelBlock.getBlockData();
+        if (blockData instanceof Directional directional) {
+            directional.setFacing(BlockFace.WEST); // Устанавливаем направление на запад
+            barrelBlock.setBlockData(directional);
         }
+
+        // Добавляем лут в бочку
+        airdropLoot.addLoot(barrelBlock);
+
+        // Добавляем тег к бочке
+        if (barrelBlock.getState() instanceof Barrel barrel) {
+            ItemMeta meta = barrel.getInventory().getItem(0).getItemMeta(); // Получаем первый предмет в инвентаре
+            if (meta != null) {
+                String randomKey = generateRandomKey(); // Генерируем случайный ключ
+                meta.getPersistentDataContainer().set(new NamespacedKey("gribmine", "airdrop_key"), PersistentDataType.STRING, randomKey);
+                barrel.getInventory().getItem(0).setItemMeta(meta); // Устанавливаем обновленный ItemMeta
+            }
+        }
+
+        // Удаляем ArmorStand
+        armor.remove();
+    }
+
+    private static String generateRandomKey() {
+        // Генерация случайного ключа (например, 10 случайных символов)
+        StringBuilder key = new StringBuilder();
+        Random random = new Random();
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (int i = 0; i < 10; i++) {
+            key.append(characters.charAt(random.nextInt(characters.length())));
+        }
+        return key.toString();
     }
 
     @EventHandler
@@ -88,96 +132,15 @@ public class airdropMain implements Listener {
         Block block = event.getBlock();
 
         // Проверяем, совпадает ли локация и является ли блок бочкой
-        if (block.getLocation().getX() == this.location.getX() &&
-                block.getLocation().getZ() == this.location.getZ() &&
-                block.getType() == Material.BARREL) {
-            event.setCancelled(true);
-            pl.sendMessage(ChatColor.RED+"AirDrop cannot be broken by player");
-        }
-    }
+        if (block.getState() instanceof Barrel barrel) {
+            String key = Objects.requireNonNull(Objects.requireNonNull(barrel.getInventory().getItem(0)).getItemMeta()).getPersistentDataContainer().get(new NamespacedKey("gribmine", "airdrop_key"), PersistentDataType.STRING);
 
-    public void activation() {
-        // Молись богу, чтобы этот метод работал так, как я его задумывал
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                boolean isAir = true;
-
-                // Проверяем блоки под ArmorStand
-                for (int x = -1; x <= 1; x++) {
-                    for (int z = -1; z <= 1; z++) {
-                        if (armor.getLocation().add(x, -1, z).getBlock().getType() != Material.AIR) {
-                            isAir = false;
-                            break;
-                        }
-                    }
-                    if (!isAir) break;
-                }
-
-                if (!isAir) {
-                    location = armor.getLocation();
-                    armor.remove();
-
-                    // Устанавливаем блок на место
-                    location.getBlock().setType(Material.BARREL);
-
-                    // Получаем BlockData для бочки и устанавливаем направление
-                    BlockData blockData = location.getBlock().getBlockData();
-                    if (blockData instanceof Directional directional) {
-                        directional.setFacing(BlockFace.WEST); // Устанавливаем направление на запад
-                        location.getBlock().setBlockData(directional);
-                    }
-
-                    // Добавляем лут в бочку
-                    airdropLoot.addLoot(location.getBlock());
-
-                    // Создаем случайный ключ
-                    ItemStack key = new ItemStack(Material.TRIPWIRE_HOOK); // Замените на нужный тип ключа
-                    ItemMeta keyMeta = key.getItemMeta();
-                    if (keyMeta != null) {
-                        keyMeta.setDisplayName(ChatColor.GOLD + "Случайный ключ");
-                        keyMeta.getPersistentDataContainer().set(new NamespacedKey("yourplugin", "Key"), PersistentDataType.STRING, "Key"); // Устанавливаем тег
-                        key.setItemMeta(keyMeta);
-                    }
-
-                    // Устанавливаем ключ в бочку
-                    Block barrelBlock = location.getBlock();
-                    if (barrelBlock.getState() instanceof Barrel barrel) {
-                        barrel.getInventory().addItem(key); // Добавляем ключ в инвентарь бочки
-                        barrel.update(); // Обновляем состояние бочки
-                    }
-
-                    // Запускаем таймер на 5 минут
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            // Логика удаления тега
-                            if (barrelBlock.getState() instanceof Barrel barrel) {
-                                for (ItemStack item : barrel.getInventory().getContents()) {
-                                    if (item != null && item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).getPersistentDataContainer().has(new NamespacedKey("GribMine", "Key"), PersistentDataType.STRING)) {
-                                        // Удаляем тег
-                                        ItemMeta meta = item.getItemMeta();
-                                        if (meta != null) {
-                                            meta.getPersistentDataContainer().remove(new NamespacedKey("GribMine", "Key")); // Удаляем тег
-                                            item.setItemMeta(meta);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Сообщение игрокам
-                            for (Player player : Bukkit.getOnlinePlayers()) {
-                                player.sendMessage(ChatColor.RED + "Дроп закрыт на координатах: " + location.getX() + ", " + location.getZ());
-                            }
-                        }
-                    }.runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 5 * 60 * 20); // 5 минут
-
-                    cancel(); // Останавливаем текущий таск
-                }
+            if (key != null) {
+                event.setCancelled(true);
+                pl.sendMessage(ChatColor.RED + "AirDrop cannot be broken by player");
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 5);
+        }
     }
     public Location getLocation() { return location; }
     public static List<airdropMain> getAirdropList() { return airdropList; }
 }
-

@@ -4,6 +4,7 @@ import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Material;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,20 +29,28 @@ public class airdropLoot {
     private static final WeaponManager weaponManager = new WeaponManager(GribMine.getMineConfig().getStringList("rarity_list"), (HashMap<String, Double>) GribMine.getMineConfig().getList("damage_mod"));
 
     public static void addLoot(Block block){
-        for (int i = 0; i<GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
-            block.getDrops().add(generateRandomWeapon());
-        }
+        // Проверяем, что блок является бочкой
+        if (block.getState() instanceof Barrel barrel) {
+            // Добавляем оружие в инвентарь бочки
+            for (int i = 0; i<GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
+                barrel.getInventory().addItem(generateRandomWeapon());
+            }
 
-        for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations")+1); rot > 0; rot--) {
-            // Выбираем случайный элемент из lootTable
-            String randomItem = lootTable.get(random.nextInt(lootTable.size()));
-            Material material = Material.matchMaterial(randomItem);
+            // Добавляем рандомный дроп в инвентарь бочки
+            for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations")+1); rot > 0; rot--) {
+                // Выбираем случайный элемент из lootTable
+                String randomItem = lootTable.get(random.nextInt(lootTable.size()));
+                Material material = Material.matchMaterial(randomItem);
 
-            // Проверяем, что материал не равен null
-            assert material != null;
+                // Проверяем, что материал не равен null
+                assert material != null;
 
-            // Добавляем новый ItemStack в дроп блока
-            block.getDrops().add(new ItemStack(material, random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxItemInOneRot")+1)));
+                // Добавляем новый ItemStack в инвентарь бочки
+                barrel.getInventory().addItem(new ItemStack(material, random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxItemInOneRot")+1)));
+            }
+
+            // Обновляем состояние бочки
+            barrel.update();
         }
     }
     private static ItemStack generateRandomWeapon() {

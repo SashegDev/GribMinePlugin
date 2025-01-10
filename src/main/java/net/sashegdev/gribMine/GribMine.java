@@ -52,10 +52,13 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
         weaponManager = new WeaponManager(rarityList, damageModifiers);
 
+        // Инициализируем airdropMain
+        airdropMain = new airdropMain(); // Создайте экземпляр airdropMain
+
         // Регистрируем слушатели
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(weaponManager, this);
-        getServer().getPluginManager().registerEvents(airdropMain,this);
+        getServer().getPluginManager().registerEvents(airdropMain, this); // Теперь это не null
 
         logger.info("GribMine Plugin initialized ;)");
         logger.info("Версия плагина: " + getDescription().getVersion());
