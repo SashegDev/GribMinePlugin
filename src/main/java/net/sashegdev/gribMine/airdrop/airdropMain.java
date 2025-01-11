@@ -89,7 +89,7 @@ public class airdropMain implements Listener {
 
     public static void activate() {
         // Добавляем лут в бочку
-        addLootToBarrel();
+        Block barrelBlock = addLootToBarrel(); // Изменяем метод, чтобы он возвращал блок бочки
 
         // Получаем время таймера из конфигурации
         int timerDuration = GribMine.getMineConfig().getInt("AirDropTimer"); // Время в секундах
@@ -100,52 +100,33 @@ public class airdropMain implements Listener {
 
             @Override
             public void run() {
-
-                Block barrelBlock = armor.getLocation().getBlock();
                 // Проверяем, осталось ли время
                 if (timeLeft > 0) {
                     // Отображаем оставшееся время над бочкой
-                    armor = barrelBlock.getWorld().spawn(barrelBlock.getLocation(), ArmorStand.class);
-                    armor.setInvisible(true); // ArmorStand невидим
-                    armor.setInvulnerable(true); // ArmorStand не получает урона
-                    armor.setCustomNameVisible(true); // Имя будет видно игрокам
-                    armor.setCanPickupItems(false); // Запретить подбирать предметы
-                    armor.setCustomName(ChatColor.RED + "AirDrop (Открытие через " +ChatColor.RED+ timeLeft +ChatColor.RED+ " секунд)");
-                    timeLeft--; // Уменьшаем оставшееся время
+                    armor.setCustomName(ChatColor.RED + "AirDrop (Открытие через " + ChatColor.RED + timeLeft + ChatColor.RED + " секунд)");
+                    timeLeft--; // У меньшаем оставшееся время
                 } else {
-                    // Получаем блок бочки
-
-
-                    // Удаляем тег Lock
+                    // Удаляем тег Lock с бочки
                     if (barrelBlock.getState() instanceof Barrel barrel) {
-                        ItemStack item = barrel.getInventory().getItem(0);
-                        if (item != null && item.hasItemMeta()) {
-                            ItemMeta meta = item.getItemMeta();
-                            if (meta != null) {
-                                meta.getPersistentDataContainer().remove(new NamespacedKey("gribmine", "Lock")); // Удаляем тег Lock
-                                item.setItemMeta(meta); // Обновляем предмет
-                            }
-                        }
+                        PersistentDataContainer container = barrel.getPersistentDataContainer();
+                        container.remove(new NamespacedKey("gribmine", "Lock")); // Удаляем тег Lock с бочки
                     }
 
-                    // Удаляем ArmorStand или обновляем его имя
+                    // Обновляем имя ArmorStand
                     armor.setCustomName(ChatColor.GREEN + "AirDrop (Теперь открыто!)");
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            armor.remove();
+                            armor.remove(); // Удаляем ArmorStand после открытия
                         }
-                    }.runTaskLater(GribMine.getPlugin(GribMine.class),3*20);
+                    }.runTaskLater(GribMine.getPlugin(GribMine.class), 3 * 20);
                     cancel(); // Останавливаем задачу
                 }
             }
         }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 20); // Запускаем каждую секунду (20 тиков)
     }
 
-    public airdropMain() {
-    }
-
-    private static void addLootToBarrel() {
+    private static Block addLootToBarrel() {
         // Устанавливаем блок на место
         Block barrelBlock = armor.getLocation().getBlock();
         barrelBlock.setType(Material.BARREL);
@@ -163,18 +144,13 @@ public class airdropMain implements Listener {
         // Добавляем тег к бочке
         if (barrelBlock.getState() instanceof Barrel barrel) {
             // Получаем PersistentDataContainer для бочки
-            ItemMeta meta = barrel.getInventory().getItem(0).getItemMeta(); // Получаем первый предмет в инвентаре
-            if (meta != null) {
-                // Устанавливаем метаданные для самой бочки
-                PersistentDataContainer container = barrel.getPersistentDataContainer();
-                String randomKey = generateRandomKey(); // Генерируем случайный ключ
-                container.set(new NamespacedKey("gribmine", "Lock"), PersistentDataType.STRING, randomKey);
-                container.set(new NamespacedKey("gribmine", "Tag"), PersistentDataType.STRING, "AirDrop");
-            }
+            PersistentDataContainer container = barrel.getPersistentDataContainer();
+            String randomKey = generateRandomKey(); // Генерируем случайный ключ
+            container.set(new NamespacedKey("gribmine", "Lock"), PersistentDataType.STRING, randomKey);
+            container.set(new NamespacedKey("gribmine", "Tag"), PersistentDataType.STRING, "AirDrop");
         }
 
-        // Удаляем ArmorStand
-        armor.remove();
+        return barrelBlock; // Возвращаем блок бочки
     }
 
     private static String generateRandomKey() {
@@ -214,6 +190,12 @@ public class airdropMain implements Listener {
             }
         }
     }
-    public Location getLocation() { return location; }
-    public static List<airdropMain> getAirdropList() { return airdropList; }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public static List<airdropMain> getAirdropList() {
+        return airdropList;
+    }
 }
