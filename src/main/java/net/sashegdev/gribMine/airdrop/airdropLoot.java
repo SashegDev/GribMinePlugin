@@ -50,9 +50,10 @@ public class airdropLoot {
             }
 
             // Обновляем состояние бочки
-            barrel.update();
+            //barrel.update();
         }
     }
+
     private static ItemStack generateRandomWeapon() {
         // Получаем случайную рарность
         List<String> rarityList = weaponManager.getRarityList();
@@ -83,7 +84,7 @@ public class airdropLoot {
             List<String> lore = new ArrayList<>();
             lore.add("Редкость: " + randomRarity);
             if (randomAbility != null) {
-                lore.add("Способность: " + randomAbility.getName());
+                lore.add("Способность: " + randomAbility.getRussianName());
             } else {
                 lore.add("Способность: none");
             }

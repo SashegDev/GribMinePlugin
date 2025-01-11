@@ -21,7 +21,7 @@ public class LightStrike extends WeaponAbility {
         if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
             player.setCooldown(player.getInventory().getItemInMainHand(), 40 * 20);
 
-            player.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 40, 255, true, false, false));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 40, 255, true, false, false));
 
             // Создаем удар молнии
             entity.getWorld().spawn(entity.getLocation(), LightningStrike.class);
