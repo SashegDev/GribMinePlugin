@@ -60,3 +60,5 @@ AirDropMaxRotations: 5
 
 #кол-во максимального добавления предетов в 1 ротации
 AirDropMaxItemInOneRot: 32
+
+AirDropTimer: 10
