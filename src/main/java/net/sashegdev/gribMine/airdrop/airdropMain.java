@@ -107,15 +107,12 @@ public class airdropMain implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                // Получаем текущую Y-координату арморстенда
-                double currentY = armor.getLocation().getY();
-                // Проверяем, находится ли Y-координата в пределах 1 блока от целевой Y-координаты
-                if (armor != null && Math.abs(currentY - location.getY()) <= 1) {
-                    activate(); // Вызываем метод активации, если арморстенд близок к земле
-                    cancel(); // Останавливаем задачу
+                if ((armor != null && armor.isOnGround())) {
+                    activate(); // Call the activate method when armor is on the ground
+                    cancel(); // Stop this task
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Проверяем каждую тика (1 тика = 1/20 секунды)
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Check every tick (1 tick = 1/20 second)
     }
 
     public void startSlowFall() {
