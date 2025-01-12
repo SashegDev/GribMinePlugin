@@ -155,7 +155,7 @@ public class WeaponManager implements Listener {
         return damageModifiers.getOrDefault(rarity, 1.0); // Возвращаем множитель урона, если рарность не найдена, возвращаем 1.0
     }
 
-    public List<String> getRarityList() {
+    public static List<String> getRarityList() {
         return rarityList;
     }
 

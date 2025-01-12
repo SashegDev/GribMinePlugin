@@ -160,8 +160,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         ItemMeta itemMeta = item.getItemMeta();
 
         if (itemMeta != null) {
-            // Set the display name
-            itemMeta.setDisplayName("Воздушное снабжение");
+            // Set the display name with color codes
+            itemMeta.setDisplayName(ChatColor.RESET + "" + ChatColor.LIGHT_PURPLE + "Воздушное снабжение");
 
             // Set the lore
             List<String> lore = new ArrayList<>();
@@ -188,8 +188,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             if (item.getType() == Material.AMETHYST_SHARD && item.getItemMeta() != null) {
                 ItemMeta itemMeta = item.getItemMeta();
 
-                // Check for the display name
-                if (itemMeta.getDisplayName().equals("Воздушное снабжение")) {
+                // Check for the display name (ignoring color codes)
+                String displayName = ChatColor.stripColor(itemMeta.getDisplayName());
+                if (displayName.equals("Воздушное снабжение")) {
                     // Check for the lore
                     List<String> lore = itemMeta.getLore();
                     List<String> expectedLore = new ArrayList<>();
@@ -216,7 +217,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             }
         }
     }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
@@ -287,35 +287,45 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("set");
                 completions.add("reassemble");
                 completions.add("reset");
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("set")) {
-                // Подсказки для третьего аргумента
-                completions.add("rarity=");
-                completions.add("ability=");
-            } else if (args.length == 4 && args[0].equalsIgnoreCase("set")) {
-                // Подсказки для значений rarity
-                if (args[2].startsWith("rarity=")) {
-                    List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
-                    for (String rarity : rarities) {
-                        completions.add("rarity=" + rarity);
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
+                // Подсказки для rarity
+                List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
+                completions.addAll(rarities);
+            } else if (args.length == 4 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
+                // Подсказки для ability
+                HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                for (String abilityName : abilities.keySet()) {
+                    // Фильтруем русские названия, оставляем только теги
+                    if (!abilityName.equals(abilities.get(abilityName).getRussianName())) {
+                        completions.add(abilityName);
                     }
                 }
-                // Подсказки для значений ability
-                if (args[2].startsWith("ability=")) {
-                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
-                    for (String abilityName : abilities.keySet()) {
-                        completions.add("ability=" + abilityName);
-                    }
-                }
-                //TODO: починить эту хуету, так как /gribmine airdrop summon не показывает еще atme
             } else if (args.length == 2 && args[0].equalsIgnoreCase("airdrop")) {
+                // Подсказки для второго аргумента команды airdrop
                 completions.add("summon");
                 completions.add("give");
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("summon")) {
-                completions.add("atme");
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("airdrop")) {
+                // Подсказки для третьего аргумента команды airdrop
+                if (args[1].equalsIgnoreCase("summon")) {
+                    completions.add("atme");
+                } else if (args[1].equalsIgnoreCase("give")) {
+                    // Подсказки для списка игроков
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        completions.add(player.getName());
+                    }
+                }
+            } else if (args.length == 4 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
+                // Подсказка для числа (количество аирдропов)
+                completions.add("[<count>]"); // Подсказка для ввода числа
             }
         }
 
-        // Возвращаем список подсказок
+        // Фильтруем подсказки по уже введенному тексту
+        if (args.length > 0) {
+            String lastArg = args[args.length - 1].toLowerCase();
+            completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
+        }
+
         return completions;
     }
 
