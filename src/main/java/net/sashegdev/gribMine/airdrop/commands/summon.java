@@ -1,9 +1,9 @@
 package net.sashegdev.gribMine.airdrop.commands;
 
+import net.md_5.bungee.api.ChatColor;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

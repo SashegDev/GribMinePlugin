@@ -45,13 +45,8 @@ public class airdropMain implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                // Get the highest block Y at the X and Z coordinates
-                int highestY = p.getWorld().getHighestBlockYAt(location.getBlockX(), location.getBlockZ());
-                // Set the Y coordinate to be above the highest block
-                location.setY(highestY + 1); // Spawn 1 block above the highest block
 
-                // Create ArmorStand
-                armor = p.getWorld().spawn(location.clone().add(0, 1, 0), ArmorStand.class); // Adjust Y position
+                armor = p.getWorld().spawn(location, ArmorStand.class);
                 armor.setInvisible(true);
                 armor.setInvulnerable(true);
                 armor.setCustomName(ChatColor.RED + "Воздушное Снабжение");
@@ -60,17 +55,14 @@ public class airdropMain implements Listener {
                 Objects.requireNonNull(armor.getEquipment()).setHelmet(new ItemStack(Material.BARREL));
 
                 // Add slow falling effect
-                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 1)); // Уменьшите уровень эффекта
-
-                // Start slow fall
-                startSlowFall();
+                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 999)); // Уменьшите уровень эффекта
 
                 // Notify players
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(ChatColor.GRAY +
                             "Я увидел самолет...\n" +
                             "И он что-то выбросил...\n" +
-                            "Это примерно на:\n" +
+                            "Где то на:\n" +
                             "X:" + ChatColor.GOLD + location.getBlockX() + ChatColor.GRAY + " Z:" + ChatColor.GOLD + location.getBlockZ()
                     );
                 }
@@ -93,7 +85,7 @@ public class airdropMain implements Listener {
                     // Loop to spawn particles from startY to startY + 18 with a step of 0.2
                     for (double y = startY; y <= startY + 18; y += 0.2) {
                         Location particleLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), y, playerLocation.getZ());
-                        Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.LARGE_SMOKE, particleLocation, 1, 0, 0, 0, 0.001);
+                        Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.WITCH, particleLocation, 1, 0.2, 0, 0.2, 0.001);
                     }
                     ticks++;
                 } else {
@@ -107,30 +99,23 @@ public class airdropMain implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if ((armor != null && armor.isOnGround())) {
-                    activate(); // Call the activate method when armor is on the ground
-                    cancel(); // Stop this task
+                if (armor.isOnGround()) {
+                    Block BARREL = armor.getLocation().getBlock();
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            BARREL.setType(Material.AIR);
+                            //Objects.requireNonNull(BARREL.getLocation().getWorld()).playSound(BARREL.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_7,100,0); //ЭТО ДЛЯ ДЕБАГА ЧТО БЫ ПОНЯТ РАБОТАЕТ ЛИ
+                        }
+                    }.runTaskLater(GribMine.getPlugin(GribMine.class),20*10*60);
+                    activate(); // Вызываем активацию
+                    cancel();
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Check every tick (1 tick = 1/20 second)
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class),0,1);
+
     }
 
-    public void startSlowFall() {
-        new BukkitRunnable() {
-            double fallSpeed = 0.1; // Скорость падения
-            double currentY = armor.getLocation().getY(); // Текущая высота
-
-            @Override
-            public void run() {
-                if (armor != null && !armor.isOnGround()) {
-                    currentY -= fallSpeed; // Уменьшаем Y координату
-                    armor.teleport(new Location(armor.getWorld(), armor.getLocation().getX(), currentY, armor.getLocation().getZ()));
-                } else {
-                    cancel(); // Останавливаем задачу, если арморстенд на земле
-                }
-            }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Запускаем каждую тика
-    }
 
     public void activate() {
         // Добавляем лут в бочку
@@ -139,21 +124,20 @@ public class airdropMain implements Listener {
     }
 
     private Block addLootToBarrel() {
-        // Set the block type to barrel
-        barrelBlock = armor.getLocation().getBlock(); // Store the reference to the barrel block
-        barrelBlock.setType(Material.BARREL);
+        barrelBlock = armor.getLocation().getBlock(); // Блок, на котором находится ArmorStand
+        barrelBlock.setType(Material.BARREL); // Устанавливаем тип блока на бочку
 
-        // Set the block data for the barrel
+        // Устанавливаем направление бочки
         BlockData blockData = barrelBlock.getBlockData();
         if (blockData instanceof Directional directional) {
-            directional.setFacing(BlockFace.WEST); // Set direction to west
+            directional.setFacing(BlockFace.WEST); // Направление бочки
             barrelBlock.setBlockData(directional);
         }
 
-        // Add loot to the barrel
+        // Добавляем лут в бочку
         airdropLoot.addLoot(barrelBlock);
 
-        return barrelBlock; // Return the barrel block
+        return barrelBlock;
     }
 
     public Location getLocation() {

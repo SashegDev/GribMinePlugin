@@ -64,7 +64,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
         logger.info("GribMine Plugin initialized ;)");
         //logger.info("Версия плагина: " + getDescription().getVersion());
-        logger.info("Версия плагина: 1.1 - Ебал я в рот ебучие абилки и другие баги");
+        logger.info("Версия плагина: 1.1.1 - Ебал я в рот ебучие абилки и другие баги");
 
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
     }
