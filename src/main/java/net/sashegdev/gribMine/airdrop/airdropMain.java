@@ -27,6 +27,7 @@ public class airdropMain implements Listener {
     private final Location location;
     private static final List<airdropMain> airdropList = new ArrayList<>();
     private LivingEntity armor;
+    private boolean gravityEnabled = false; // Флаг для включения гравитации
 
     public airdropMain(@NotNull Player p) {
         this(p, 350, 350);
@@ -34,18 +35,17 @@ public class airdropMain implements Listener {
 
     public airdropMain(@NotNull Player p, int w, int h) {
         this.location = p.getLocation().add(new Random().nextInt(-w, w), 0, new Random().nextInt(-h, h));
-        this.location.setY(p.getLocation().getY() + 100); // Set height
+        this.location.setY(p.getLocation().getY() + 500); // Устанавливаем высоту
 
         System.out.println("Airdrop! X:" + location.getX() + " Z:" + location.getZ());
         airdropList.add(this);
 
-        // Spawn particle column at player's location
+        // Спавн колонны частиц на месте игрока
         spawnParticleColumn(p.getLocation());
 
         new BukkitRunnable() {
             @Override
             public void run() {
-
                 armor = p.getWorld().spawn(location, ArmorStand.class);
                 armor.setInvisible(true);
                 armor.setInvulnerable(true);
@@ -54,10 +54,10 @@ public class airdropMain implements Listener {
                 armor.setCanPickupItems(false);
                 Objects.requireNonNull(armor.getEquipment()).setHelmet(new ItemStack(Material.BARREL));
 
-                // Add slow falling effect
-                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 999)); // Уменьшите уровень эффекта
+                // Убираем гравитацию на старте
+                armor.setGravity(false);
 
-                // Notify players
+                // Уведомляем игроков
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(ChatColor.GRAY +
                             "Я увидел самолет...\n" +
@@ -66,61 +66,79 @@ public class airdropMain implements Listener {
                             "X:" + ChatColor.GOLD + location.getBlockX() + ChatColor.GRAY + " Z:" + ChatColor.GOLD + location.getBlockZ()
                     );
                 }
-                startCheckingForGround();
+                startFalling();
             }
         }.runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 20 * 25);
     }
 
     private void spawnParticleColumn(Location playerLocation) {
-        // Start a new BukkitRunnable to spawn particles for 20 seconds
+        // Запускаем новый BukkitRunnable для спавна частиц в течение 20 секунд
         new BukkitRunnable() {
-            int ticks = 0; // Counter for ticks
+            int ticks = 0; // Счетчик тиков
 
             @Override
             public void run() {
-                // Spawn particles every tick for 20 seconds (20 seconds = 400 ticks)
+                // Спавним частицы каждый тик в течение 20 секунд (20 секунд = 400 тиков)
                 if (ticks < 400) {
-                    // Get the starting Y coordinate
-                    double startY = playerLocation.getY(); // Use double for more precision
-                    // Loop to spawn particles from startY to startY + 18 with a step of 0.2
+                    // Получаем начальную координату Y
+                    double startY = playerLocation.getY(); // Используем double для большей точности
+                    // Цикл для спавна частиц от startY до startY + 18 с шагом 0.2
                     for (double y = startY; y <= startY + 18; y += 0.2) {
                         Location particleLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), y, playerLocation.getZ());
                         Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.WITCH, particleLocation, 1, 0.2, 0, 0.2, 0.001);
                     }
                     ticks++;
                 } else {
-                    cancel(); // Stop the task after 20 seconds
+                    cancel(); // Останавливаем задачу после 20 секунд
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Start immediately and run every tick
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Запускаем сразу и выполняем каждый тик
     }
 
-    public void startCheckingForGround() {
+    public void startFalling() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (armor.isOnGround()) {
-                    Block BARREL = armor.getLocation().getBlock();
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            BARREL.setType(Material.AIR);
-                            //Objects.requireNonNull(BARREL.getLocation().getWorld()).playSound(BARREL.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_7,100,0); //ЭТО ДЛЯ ДЕБАГА ЧТО БЫ ПОНЯТ РАБОТАЕТ ЛИ
-                        }
-                    }.runTaskLater(GribMine.getPlugin(GribMine.class),20*10*60);
-                    activate(); // Вызываем активацию
+                if (armor == null || armor.isDead()) {
                     cancel();
+                    return;
+                }
+
+                Location armorLocation = armor.getLocation();
+                Block blockBelow = armorLocation.getBlock().getRelative(BlockFace.DOWN);
+
+                // Проверяем, находится ли аирдроп над водой
+                if (blockBelow.getType() == Material.WATER) {
+                    activate(); // Активируем аирдроп, если он над водой
+                    cancel();
+                    return;
+                }
+
+                // Проверяем, находится ли аирдроп на высоте 5 блоков над землей
+                if (!gravityEnabled && armorLocation.getY() - blockBelow.getY() <= 5) {
+                    gravityEnabled = true;
+                    armor.setGravity(true); // Включаем гравитацию
+                }
+
+                // Если гравитация включена, проверяем, достиг ли аирдроп земли
+                if (gravityEnabled && armor.isOnGround()) {
+                    activate(); // Активируем аирдроп, если он на земле
+                    cancel();
+                } else if (!gravityEnabled) {
+                    // Медленно опускаем аирдроп, если гравитация выключена
+                    armorLocation.setY(armorLocation.getY() - 0.1); // Кастомная скорость падения
+                    armor.teleport(armorLocation);
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class),0,1);
-
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Запускаем сразу и выполняем каждый тик
     }
-
 
     public void activate() {
         // Добавляем лут в бочку
         barrelBlock = addLootToBarrel();
-        armor.remove();
+        if (armor != null) {
+            armor.remove();
+        }
     }
 
     private Block addLootToBarrel() {

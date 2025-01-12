@@ -8,14 +8,12 @@ import net.sashegdev.gribMine.weapon.WeaponManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Trident;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -41,6 +39,18 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         // Загружаем конфигурацию
         saveDefaultConfig();
         config = getConfig();
+
+        // Удаляем все ArmorStand с именем аирдропа при запуске плагина
+        for (World world : Bukkit.getWorlds()) {
+            for (Entity entity : world.getEntities()) {
+                if (entity instanceof ArmorStand) {
+                    ArmorStand armorStand = (ArmorStand) entity;
+                    if (armorStand.getCustomName() != null && armorStand.getCustomName().equals(ChatColor.RED + "Воздушное Снабжение")) {
+                        armorStand.remove(); // Удаляем ArmorStand
+                    }
+                }
+            }
+        }
 
         List<String> rarityList;
         HashMap<String, Double> damageModifiers;
@@ -74,58 +84,15 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     @EventHandler
     public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        if (damager instanceof Player &&
-                !(
-                        ((Player) damager).getInventory().getItemInMainHand().equals(Material.CROSSBOW) ||
-                                ((Player) damager).getInventory().getItemInMainHand().equals(Material.BOW)
-                )
-        ) {
-            Player player = (Player) damager;
-            //logger.info("player attacked ponos!");
-
-            ItemStack weapon = player.getInventory().getItemInMainHand();
-            ItemMeta weaponMeta = weapon.getItemMeta();
-
-            if (weaponMeta != null) {
-                List<String> lore = weaponMeta.getLore();
-                String rarity = null;
-                String passiveAbility = null;
-
-                if (lore != null) {
-                    for (String line : lore) {
-                        if (line.startsWith("Редкость: ")) {
-                            rarity = line.substring(10);
-                        } else if (line.startsWith("Способность: ")) {
-                            passiveAbility = line.substring(13);
-                        }
-                    }
-                }
-
-                if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
-                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
-                    if (abilities != null) {
-                        WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
-                        if (ability != null) {
-                            if (Math.random() < ability.getChance()) {
-                                if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
-                                    //logger.info("Сработала способка!");
-                                    ability.activate(player, event.getEntity()); // Передаем целевую сущность
-                                }
-                            }
-                        } else {
-                            logger.warning("Способность не найдена: " + passiveAbility);
-                        }
-                    }
-                }
-            }
-        } else if (damager instanceof Arrow arrow) {
-            Entity shooter = (Entity) arrow.getShooter();
-            if (shooter instanceof Player player) {
-                //logger.info("player shot an arrow!");
+        switch (damager) {
+            case Player player when !(
+                    ((Player) damager).getInventory().getItemInMainHand().equals(Material.CROSSBOW) ||
+                            ((Player) damager).getInventory().getItemInMainHand().equals(Material.BOW)
+            ) -> {
+                //logger.info("player attacked ponos!");
 
                 ItemStack weapon = player.getInventory().getItemInMainHand();
                 ItemMeta weaponMeta = weapon.getItemMeta();
-
                 if (weaponMeta != null) {
                     List<String> lore = weaponMeta.getLore();
                     String rarity = null;
@@ -148,7 +115,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                             if (ability != null) {
                                 if (Math.random() < ability.getChance()) {
                                     if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
-                                        //logger.info("Сработала способка от стрелы!");
+                                        //logger.info("Сработала способка!");
                                         ability.activate(player, event.getEntity()); // Передаем целевую сущность
                                     }
                                 }
@@ -159,46 +126,91 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                 }
             }
-        } else if (damager instanceof Trident arrow) {
-            Entity shooter = (Entity) arrow.getShooter();
-            if (shooter instanceof Player player) {
-                //logger.info("player shot an arrow!");
+            case Arrow arrow -> {
+                Entity shooter = (Entity) arrow.getShooter();
+                if (shooter instanceof Player player) {
+                    //logger.info("player shot an arrow!");
 
-                ItemStack weapon = player.getInventory().getItemInMainHand();
-                ItemMeta weaponMeta = weapon.getItemMeta();
+                    ItemStack weapon = player.getInventory().getItemInMainHand();
+                    ItemMeta weaponMeta = weapon.getItemMeta();
 
-                if (weaponMeta != null) {
-                    List<String> lore = weaponMeta.getLore();
-                    String rarity = null;
-                    String passiveAbility = null;
+                    if (weaponMeta != null) {
+                        List<String> lore = weaponMeta.getLore();
+                        String rarity = null;
+                        String passiveAbility = null;
 
-                    if (lore != null) {
-                        for (String line : lore) {
-                            if (line.startsWith("Редкость: ")) {
-                                rarity = line.substring(10);
-                            } else if (line.startsWith("Способность: ")) {
-                                passiveAbility = line.substring(13);
+                        if (lore != null) {
+                            for (String line : lore) {
+                                if (line.startsWith("Редкость: ")) {
+                                    rarity = line.substring(10);
+                                } else if (line.startsWith("Способность: ")) {
+                                    passiveAbility = line.substring(13);
+                                }
                             }
                         }
-                    }
 
-                    if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
-                        HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
-                        if (abilities != null) {
-                            WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
-                            if (ability != null) {
-                                if (Math.random() < ability.getChance()) {
-                                    if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
-                                        //logger.info("Сработала способка от стрелы!");
-                                        ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                        if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                            HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                            if (abilities != null) {
+                                WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
+                                if (ability != null) {
+                                    if (Math.random() < ability.getChance()) {
+                                        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+                                            //logger.info("Сработала способка от стрелы!");
+                                            ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                        }
                                     }
+                                } else {
+                                    logger.warning("Способность не найдена: " + passiveAbility);
                                 }
-                            } else {
-                                logger.warning("Способность не найдена: " + passiveAbility);
                             }
                         }
                     }
                 }
+            }
+            case Trident arrow -> {
+                Entity shooter = (Entity) arrow.getShooter();
+                if (shooter instanceof Player player) {
+                    //logger.info("player shot an arrow!");
+
+                    ItemStack weapon = player.getInventory().getItemInMainHand();
+                    ItemMeta weaponMeta = weapon.getItemMeta();
+
+                    if (weaponMeta != null) {
+                        List<String> lore = weaponMeta.getLore();
+                        String rarity = null;
+                        String passiveAbility = null;
+
+                        if (lore != null) {
+                            for (String line : lore) {
+                                if (line.startsWith("Редкость: ")) {
+                                    rarity = line.substring(10);
+                                } else if (line.startsWith("Способность: ")) {
+                                    passiveAbility = line.substring(13);
+                                }
+                            }
+                        }
+
+                        if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                            HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                            if (abilities != null) {
+                                WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
+                                if (ability != null) {
+                                    if (Math.random() < ability.getChance()) {
+                                        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+                                            //logger.info("Сработала способка от стрелы!");
+                                            ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                        }
+                                    }
+                                } else {
+                                    logger.warning("Способность не найдена: " + passiveAbility);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            default -> {
             }
         }
     }
