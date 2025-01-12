@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -58,6 +59,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
 
         weaponManager = new WeaponManager(rarityList, damageModifiers); // Pass the initialized HashMap
+        getServer().getPluginManager().registerEvents(new LootListener(), this);
 
         // Регистрируем слушатели
         getServer().getPluginManager().registerEvents(this, this);
@@ -72,7 +74,12 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     @EventHandler
     public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        if (damager instanceof Player) {
+        if (damager instanceof Player &&
+                !(
+                        ((Player) damager).getInventory().getItemInMainHand().equals(Material.CROSSBOW) ||
+                                ((Player) damager).getInventory().getItemInMainHand().equals(Material.BOW)
+                )
+        ) {
             Player player = (Player) damager;
             //logger.info("player attacked ponos!");
 
@@ -112,6 +119,47 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 }
             }
         } else if (damager instanceof Arrow arrow) {
+            Entity shooter = (Entity) arrow.getShooter();
+            if (shooter instanceof Player player) {
+                //logger.info("player shot an arrow!");
+
+                ItemStack weapon = player.getInventory().getItemInMainHand();
+                ItemMeta weaponMeta = weapon.getItemMeta();
+
+                if (weaponMeta != null) {
+                    List<String> lore = weaponMeta.getLore();
+                    String rarity = null;
+                    String passiveAbility = null;
+
+                    if (lore != null) {
+                        for (String line : lore) {
+                            if (line.startsWith("Редкость: ")) {
+                                rarity = line.substring(10);
+                            } else if (line.startsWith("Способность: ")) {
+                                passiveAbility = line.substring(13);
+                            }
+                        }
+                    }
+
+                    if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                        HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                        if (abilities != null) {
+                            WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
+                            if (ability != null) {
+                                if (Math.random() < ability.getChance()) {
+                                    if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+                                        //logger.info("Сработала способка от стрелы!");
+                                        ability.activate(player, event.getEntity()); // Передаем целевую сущность
+                                    }
+                                }
+                            } else {
+                                logger.warning("Способность не найдена: " + passiveAbility);
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (damager instanceof Trident arrow) {
             Entity shooter = (Entity) arrow.getShooter();
             if (shooter instanceof Player player) {
                 //logger.info("player shot an arrow!");
@@ -222,7 +270,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
-                sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");
+                sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon|airdrop>");
                 return true;
             }
             switch (args[0].toLowerCase()) {

@@ -3,13 +3,11 @@ package net.sashegdev.gribMine.airdrop;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,11 +81,8 @@ public class airdropLoot {
         if (meta != null) {
             List<String> lore = new ArrayList<>();
 
-            // Получаем цвет для редкости из конфига
-            ChatColor rarityColor = GribMine.getRarityColor(randomRarity);
-
             // Добавляем редкость с цветом
-            lore.add("Редкость: "+rarityColor+ randomRarity);
+            lore.add("Редкость: "+ randomRarity);
 
             // Добавляем способность с цветом из конфига
             if (randomAbility != null) {

@@ -18,13 +18,18 @@ public class SirenSong extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        if (entity instanceof LivingEntity) {
-            LivingEntity target = (LivingEntity) entity;
-            target.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 200, 0)); // Сопротивление на 10 секунд
-            player.setHealth(Math.min(player.getHealth() + 4, player.getMaxHealth())); // Добавляем 2 сердца
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            if (entity instanceof LivingEntity) {
+                LivingEntity target = (LivingEntity) entity;
+                target.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 200, 0)); // Сопротивление на 10 секунд
+                player.setHealth(Math.min(player.getHealth() + 4, player.getMaxHealth())); // Добавляем 2 сердца
 
-            // Спавн частиц
-            player.getWorld().spawnParticle(Particle.HEART, target.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
+                // Спавн частиц
+                player.getWorld().spawnParticle(Particle.HEART, target.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
+
+                // Устанавливаем кулдаун на 10 секунд (10 * 20)
+                player.setCooldown(player.getInventory().getItemInMainHand(), 10 * 20);
+            }
         }
     }
 }

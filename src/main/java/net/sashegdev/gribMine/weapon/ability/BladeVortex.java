@@ -22,7 +22,7 @@ public class BladeVortex extends WeaponAbility {
     public void activate(Player player, Entity entity) {
         if (entity instanceof LivingEntity) {
             LivingEntity target = (LivingEntity) entity;
-            target.setVelocity(new Vector(0, 2.5, 0)); // Подбрасываем вверх
+            target.setVelocity(new Vector(0, 1.2, 0)); // Подбрасываем вверх
             target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20*18, 1)); // Эффект медлительности на 5 секунд
 
             // Спавн частиц

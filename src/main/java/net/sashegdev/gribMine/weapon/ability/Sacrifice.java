@@ -18,11 +18,16 @@ public class Sacrifice extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        player.setHealth(Math.max(player.getHealth() - 6, 0)); // Убираем 3 сердца
-        int strengthLevel = Math.random() < 0.5 ? 1 : 2; // Случайный уровень силы
-        player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 500, strengthLevel)); // Сила на 25 секунд
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            player.setHealth(Math.max(player.getHealth() - 6, 0)); // Убираем 3 сердца
+            int strengthLevel = Math.random() < 0.5 ? 1 : 2; // Случайный уровень силы
+            player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 500, strengthLevel)); // Сила на 25 секунд
 
-        // Спавн частиц
-        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
+            // Спавн частиц
+            player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
+
+            // Устанавливаем кулдаун на 8 секунд (8 * 20)
+            player.setCooldown(player.getInventory().getItemInMainHand(), 8 * 20);
+        }
     }
 }

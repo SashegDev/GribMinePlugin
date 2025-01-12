@@ -6,14 +6,6 @@ rarity_list:
   - legendary
 # НЕ МЕНЯТЬ ЛИСТ РЕДКОСТЕЙ!
 
-rarity_colors:
-  common: GRAY
-  uncommon: GREEN
-  rare: BLUE
-  epic: DARK_PURPLE
-  legendary: GOLD
-# увета поддерживающиеся майном но капсом
-
 damage_mod:
   common: 0
   uncommon: 2.5
@@ -74,4 +66,8 @@ AirDropMaxRotations: 5
 #кол-во максимального добавления предетов в 1 ротации
 AirDropMaxItemInOneRot: 32
 
-AirDropTimer: 10
+#0.1 - 10% 1 - 100%
+Supply:
+  chance: 1
+  #кол-во МАКСИМАЛЬНО возможного выпадения дымовых шашек вызова дропа
+  amount: 3

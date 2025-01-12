@@ -20,25 +20,30 @@ public class Suffocation extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        if (entity instanceof LivingEntity) {
-            LivingEntity target = (LivingEntity) entity;
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            if (entity instanceof LivingEntity) {
+                LivingEntity target = (LivingEntity) entity;
 
-            new BukkitRunnable() {
-                int duration = 100; // 5 секунд
+                new BukkitRunnable() {
+                    int duration = 100; // 5 секунд
 
-                @Override
-                public void run() {
-                    if (duration <= 0 || target.isDead()) {
-                        cancel();
-                        return;
+                    @Override
+                    public void run() {
+                        if (duration <= 0 || target.isDead()) {
+                            cancel();
+                            return;
+                        }
+
+                        target.damage(1); // Наносим урон каждую секунду
+                        target.getWorld().spawnParticle(Particle.BUBBLE_POP, target.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
+
+                        duration -= 20; // Уменьшаем длительность на 1 секунду
                     }
+                }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 20);
 
-                    target.damage(1); // Наносим урон каждую секунду
-                    target.getWorld().spawnParticle(Particle.BUBBLE_POP, target.getLocation(), 10, 0.5, 0.5, 0.5, 0.1);
-
-                    duration -= 20; // Уменьшаем длительность на 1 секунду
-                }
-            }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 20);
+                // Устанавливаем кулдаун на 15 секунд (15 * 20)
+                player.setCooldown(player.getInventory().getItemInMainHand(), 15 * 20);
+            }
         }
     }
 }

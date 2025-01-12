@@ -17,12 +17,17 @@ public class ShadowCloak extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 200, 0)); // Невидимость на 10 секунд
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 200, 0)); // Невидимость на 10 секунд
 
-        // Спавн частиц
-        player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
+            // Спавн частиц
+            player.getWorld().spawnParticle(Particle.LARGE_SMOKE, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
 
-        // Можно добавить эффект замедления или что-то подобное для баланса
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 200, 1));
+            // Можно добавить эффект замедления или что-то подобное для баланса
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 200, 1));
+
+            // Устанавливаем кулдаун на 12 секунд (12 * 20)
+            player.setCooldown(player.getInventory().getItemInMainHand(), 12 * 20);
+        }
     }
 }

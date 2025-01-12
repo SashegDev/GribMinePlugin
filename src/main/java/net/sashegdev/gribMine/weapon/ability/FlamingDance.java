@@ -17,9 +17,14 @@ public class FlamingDance extends WeaponAbility {
 
     @Override
     public void activate(Player player, Entity entity) {
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 200, 1)); // Скорость на 10 секунд
+        if (player.getCooldown(player.getInventory().getItemInMainHand()) <= 1) {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 200, 1)); // Скорость на 10 секунд
 
-        // Спавн частиц
-        player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
+            // Спавн частиц
+            player.getWorld().spawnParticle(Particle.FLAME, player.getLocation(), 30, 0.5, 0.5, 0.5, 0.1);
+
+            // Устанавливаем кулдаун на 6 секунд (6 * 20)
+            player.setCooldown(player.getInventory().getItemInMainHand(), 6 * 20);
+        }
     }
 }
