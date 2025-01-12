@@ -42,7 +42,12 @@ ability_chance:
   desiccation: 0.6
   freeze: 0.3
   bloodlust: 0.6
-
+  bladeVortex: 0.4
+  sirenSong: 0.3
+  sacrifice: 0.2
+  shadowCloak: 0.5
+  flamingDance: 0.6
+  suffocation: 0.4
 
 #Вещи, которые выпадают в дропе(этот лист для обычных предемтов, не рарных)
 #НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ

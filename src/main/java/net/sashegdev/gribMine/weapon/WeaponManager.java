@@ -45,6 +45,12 @@ public class WeaponManager implements Listener {
         addAbility(new DesiccationAbility().getName(), "uncommon", new DesiccationAbility());
         addAbility(new FreezeAbility().getName(), "epic", new FreezeAbility());
         addAbility(new BloodLust().getName(), "uncommon", new BloodLust());
+        addAbility(new BladeVortex().getName(), "rare", new BladeVortex());
+        addAbility(new SirenSong().getName(), "epic", new SirenSong());
+        addAbility(new Sacrifice().getName(), "legendary", new Sacrifice());
+        addAbility(new ShadowCloak().getName(), "uncommon", new ShadowCloak());
+        //addAbility(new FlamingDance().getName(), "common", new FlamingDance());
+        addAbility(new Suffocation().getName(), "rare", new Suffocation());
     }
 
     // Метод для добавления способностей к оружию
