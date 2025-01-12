@@ -35,7 +35,7 @@ public class airdropMain implements Listener {
 
     public airdropMain(@NotNull Player p, int w, int h) {
         this.location = p.getLocation().add(new Random().nextInt(-w, w), 0, new Random().nextInt(-h, h));
-        this.location.setY(p.getLocation().getY() + 500); // Устанавливаем высоту
+        this.location.setY(p.getLocation().getY() + 250); // Устанавливаем высоту
 
         System.out.println("Airdrop! X:" + location.getX() + " Z:" + location.getZ());
         airdropList.add(this);
@@ -79,11 +79,11 @@ public class airdropMain implements Listener {
             @Override
             public void run() {
                 // Спавним частицы каждый тик в течение 20 секунд (20 секунд = 400 тиков)
-                if (ticks < 400) {
+                if (ticks < 20*35) {
                     // Получаем начальную координату Y
                     double startY = playerLocation.getY(); // Используем double для большей точности
                     // Цикл для спавна частиц от startY до startY + 18 с шагом 0.2
-                    for (double y = startY; y <= startY + 18; y += 0.2) {
+                    for (double y = startY; y <= startY + 24; y += 0.2) {
                         Location particleLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), y, playerLocation.getZ());
                         Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.WITCH, particleLocation, 1, 0.2, 0, 0.2, 0.001);
                     }
@@ -126,11 +126,11 @@ public class airdropMain implements Listener {
                     cancel();
                 } else if (!gravityEnabled) {
                     // Медленно опускаем аирдроп, если гравитация выключена
-                    armorLocation.setY(armorLocation.getY() - 0.1); // Кастомная скорость падения
+                    armorLocation.setY(armorLocation.getY() - 0.01); // Кастомная скорость падения
                     armor.teleport(armorLocation);
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Запускаем сразу и выполняем каждый тик
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 5); // Запускаем сразу и выполняем каждый тик
     }
 
     public void activate() {

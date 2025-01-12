@@ -51,11 +51,17 @@ ability_chance:
 
 #Вещи, которые выпадают в дропе(этот лист для обычных предемтов, не рарных)
 #НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
+# 1 - 100% 0.1 - 10% 0.01 - 1%
 airdrop_items:
-  - diamond
-  - gold_ingot
-  - iron_ingot
-  - acacia_planks
+  diamond:
+    chance: 1
+    amount: 10
+  gold_ingot:
+    chance: 0.5
+    amount: 5
+  iron_ingot:
+    chance: 0.3
+    amount: 3
 
 #кол-во выпадаемых оружий в дропе
 AirDropWeaponGenerateNumber: 3

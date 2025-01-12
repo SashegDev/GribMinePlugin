@@ -9,48 +9,76 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class airdropLoot {
-    private static List<String> lootTableGet = GribMine.getMineConfig().getStringList("airdrop_items");
-    private static final List<String> lootTable = new ArrayList<>();
-
-    // Инициализация lootTable
-    static {
-        for (String item : lootTableGet) {
-            lootTable.add(item.toUpperCase()); // Преобразуем в верхний регистр и добавляем в lootTable
-        }
-    }
+    private static final Map<String, Map<String, Object>> lootTable = new HashMap<>();
     private static final Random random = new Random();
     private static final WeaponManager weaponManager = new WeaponManager(GribMine.getMineConfig().getStringList("rarity_list"), (HashMap<String, Double>) GribMine.getMineConfig().getList("damage_mod"));
 
-    public static void addLoot(Block block){
+    // Инициализация lootTable
+    static {
+        // Получаем конфигурацию для аирдропов
+        Map<String, Object> lootConfig = GribMine.getMineConfig().getConfigurationSection("airdrop_items").getValues(false);
+        for (Map.Entry<String, Object> entry : lootConfig.entrySet()) {
+            String itemName = entry.getKey();
+            Map<String, Object> itemData = (Map<String, Object>) entry.getValue();
+            lootTable.put(itemName.toUpperCase(), itemData); // Преобразуем в верхний регистр и добавляем в lootTable
+        }
+    }
+
+    public static void addLoot(Block block) {
         // Проверяем, что блок является бочкой
         if (block.getState() instanceof Barrel barrel) {
             // Добавляем оружие в инвентарь бочки
-            for (int i = 0; i<GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
+            for (int i = 0; i < GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
                 barrel.getInventory().addItem(generateRandomWeapon());
             }
 
             // Добавляем рандомный дроп в инвентарь бочки
-            for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations")+1); rot > 0; rot--) {
-                // Выбираем случайный элемент из lootTable
-                String randomItem = lootTable.get(random.nextInt(lootTable.size()));
-                Material material = Material.matchMaterial(randomItem);
-
-                // Проверяем, что материал не равен null
-                assert material != null;
-
-                // Добавляем новый ItemStack в инвентарь бочки
-                barrel.getInventory().addItem(new ItemStack(material, random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxItemInOneRot")+1)));
+            for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations") + 1); rot > 0; rot--) {
+                // Выбираем случайный предмет с учетом шансов
+                String randomItem = getRandomItemWithChance();
+                if (randomItem != null) {
+                    Material material = Material.matchMaterial(randomItem);
+                    if (material != null) {
+                        // Получаем количество предметов
+                        int amount = getItemAmount(randomItem);
+                        barrel.getInventory().addItem(new ItemStack(material, amount));
+                    }
+                }
             }
 
             // Обновляем состояние бочки
-            //barrel.update();
+            barrel.update();
         }
+    }
+
+    private static String getRandomItemWithChance() {
+        double totalWeight = lootTable.values().stream()
+                .mapToDouble(item -> (double) item.get("chance"))
+                .sum();
+
+        double randomValue = ThreadLocalRandom.current().nextDouble(totalWeight);
+        double cumulativeWeight = 0.0;
+
+        for (Map.Entry<String, Map<String, Object>> entry : lootTable.entrySet()) {
+            cumulativeWeight += (double) entry.getValue().get("chance");
+            if (randomValue < cumulativeWeight) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
+    private static int getItemAmount(String itemName) {
+        Map<String, Object> itemData = lootTable.get(itemName);
+        if (itemData != null) {
+            return (int) itemData.get("amount");
+        }
+        return 1; // По умолчанию возвращаем 1, если количество не указано
     }
 
     private static ItemStack generateRandomWeapon() {
@@ -71,7 +99,6 @@ public class airdropLoot {
 
         // Создаем ItemStack для оружия
         assert weaponMaterial != null;
-
         return getWeapon(weaponMaterial, randomRarity, randomAbility);
     }
 
@@ -82,7 +109,7 @@ public class airdropLoot {
             List<String> lore = new ArrayList<>();
 
             // Добавляем редкость с цветом
-            lore.add("Редкость: "+ randomRarity);
+            lore.add("Редкость: " + randomRarity);
 
             // Добавляем способность с цветом из конфига
             if (randomAbility != null) {
