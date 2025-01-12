@@ -1,6 +1,5 @@
 package net.sashegdev.gribMine.weapon;
 
-import net.md_5.bungee.api.ChatColor;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.Bukkit;
@@ -46,8 +45,12 @@ public class WeaponManager implements Listener {
         addAbility(new DesiccationAbility().getName(), "uncommon", new DesiccationAbility());
         addAbility(new FreezeAbility().getName(), "epic", new FreezeAbility());
         addAbility(new BloodLust().getName(), "uncommon", new BloodLust());
-
-        ChangeWeapon();
+        addAbility(new BladeVortex().getName(), "rare", new BladeVortex());
+        addAbility(new SirenSong().getName(), "epic", new SirenSong());
+        addAbility(new Sacrifice().getName(), "legendary", new Sacrifice());
+        addAbility(new ShadowCloak().getName(), "uncommon", new ShadowCloak());
+        //addAbility(new FlamingDance().getName(), "common", new FlamingDance());
+        addAbility(new Suffocation().getName(), "rare", new Suffocation());
     }
 
     // Метод для добавления способностей к оружию
@@ -57,20 +60,12 @@ public class WeaponManager implements Listener {
         weaponAbilitiesForRarity.get(rarity).add(ability);
     }
 
-    public static ChatColor getRarityColor(String rarity) {
-        String colorName = GribMine.getMineConfig().getString("rarity_colors." + rarity.toLowerCase(), "WHITE");
-        try {
-            return ChatColor.valueOf(colorName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ChatColor.WHITE; // Возвращаем белый цвет, если цвет не найден
-        }
-    }
-
     public static String getNameByRussian(String name) {
         return weaponAbilities.get(name).getName();
     }
 
     //TODO: заменить на другой ивент так как этот хуйня, лучше конешн что бы вообще проверял каждый тик у каждого игрока, но тогда тпс упадет
+
     public static void ChangeWeapon() {
         new BukkitRunnable() {
 
@@ -90,13 +85,10 @@ public class WeaponManager implements Listener {
                         // Проверяем наличие тега рарности и способности в лоре
                         if (lore != null) {
                             for (String line : lore) {
-                                // Удаляем цветовые коды перед проверкой
-                                String strippedLine = ChatColor.stripColor(line);
-
-                                if (strippedLine.startsWith("Редкость: ")) {
-                                    rarity = strippedLine.substring(10); // Извлекаем редкость без цвета
-                                } else if (strippedLine.startsWith("Способность: ")) {
-                                    passiveAbility = strippedLine.substring(13); // Извлекаем способность
+                                if (line.startsWith("Редкость: ")) {
+                                    rarity = line.substring(10);
+                                } else if (line.startsWith("Способность: ")) {
+                                    passiveAbility = line.substring(13);
                                 }
                             }
                         }
@@ -144,12 +136,11 @@ public class WeaponManager implements Listener {
                                     playerRarities.add(rarity); // Добавляем рарность в список
                                 }
                             }
-
-                            // Подсвечивание, если оружие эпическое или легендарное
-                            if (rarity.equalsIgnoreCase("epic")) {
-                                player.spawnParticle(Particle.FLAME, player.getLocation().add(0, 1, 0), 3, 0.05);
-                            } else if (rarity.equalsIgnoreCase("legendary")) {
-                                player.spawnParticle(Particle.SOUL_FIRE_FLAME, player.getLocation().add(0, 1, 0), 3, 0.1);
+                            //типо подсвечивание если епик или ЛеГеНдАрКа!
+                            if (Objects.requireNonNull(item.getItemMeta().getLore()).contains("epic")) {
+                                player.spawnParticle(Particle.FLAME,player.getLocation().add(0,1,0),3,0.05);
+                            } else if (Objects.requireNonNull(item.getItemMeta().getLore()).contains("legendary")) {
+                                player.spawnParticle(Particle.SOUL_FIRE_FLAME,player.getLocation().add(0,1,0),3,0.1);
                             }
                         }
                     }
@@ -159,19 +150,10 @@ public class WeaponManager implements Listener {
     }
 
     //TODO: нормальную апишку для лора, + добавление цветов для редкостей/абилок
-
     private static List<String> createLoreWithRarity(String rarity, String passiveAbility) {
         List<String> lore = new ArrayList<>();
-
-        // Получаем цвет для редкости
-        ChatColor rarityColor = getRarityColor(rarity);
-
-        // Добавляем редкость с цветом
-        lore.add("Редкость: "+ rarityColor + rarity);
-
-        // Добавляем способность (можно также добавить цвет для способности, если нужно)
+        lore.add("Редкость: " + rarity);
         lore.add("Способность: " + passiveAbility);
-
         return lore;
     }
 

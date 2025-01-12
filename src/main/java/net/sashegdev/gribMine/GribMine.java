@@ -63,18 +63,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         getServer().getPluginManager().registerEvents(this, this);
 
         logger.info("GribMine Plugin initialized ;)");
-        logger.info("Версия плагина: " + getDescription().getVersion());
+        //logger.info("Версия плагина: " + getDescription().getVersion());
+        logger.info("Версия плагина: 1.1.1 - Ебал я в рот ебучие абилки и другие баги");
 
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
-    }
-
-    public static ChatColor getRarityColor(String rarity) {
-        String colorName = config.getString("rarity_colors." + rarity.toLowerCase(), "WHITE");
-        try {
-            return ChatColor.valueOf(colorName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ChatColor.WHITE; // Возвращаем белый цвет, если цвет не найден
-        }
     }
 
     @EventHandler
@@ -226,7 +218,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             }
         }
     }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
@@ -279,6 +270,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         return false;
     }
 
+    //подсказки епта, не знаю заработает ли с /gribadmin weapon set
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
@@ -297,12 +289,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("reassemble");
                 completions.add("reset");
             } else if (args.length == 3 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
-                // Подсказки для rarity с цветами из конфига
+                // Подсказки для rarity
                 List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
-                for (String rarity : rarities) {
-                    ChatColor color = getRarityColor(rarity);
-                    completions.add(color + rarity); // Добавляем цвет к названию редкости
-                }
+                completions.addAll(rarities);
             } else if (args.length == 4 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
                 // Подсказки для ability
                 HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
@@ -335,7 +324,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         // Фильтруем подсказки по уже введенному тексту
         if (args.length > 0) {
             String lastArg = args[args.length - 1].toLowerCase();
-            completions.removeIf(s -> !ChatColor.stripColor(s).toLowerCase().startsWith(lastArg));
+            completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
         }
 
         return completions;
