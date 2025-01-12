@@ -245,31 +245,44 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
             ItemStack item = e.getItem();
 
-            // Check if the item is an Amethyst Shard
+            // Проверяем, что предмет — это Amethyst Shard
             if (item.getType() == Material.AMETHYST_SHARD && item.getItemMeta() != null) {
                 ItemMeta itemMeta = item.getItemMeta();
 
-                // Check for the display name (ignoring color codes)
+                // Проверяем название предмета (игнорируя цветовые коды)
                 String displayName = ChatColor.stripColor(itemMeta.getDisplayName());
                 if (displayName.equals("Воздушное снабжение")) {
-                    // Check for the lore
+                    // Проверяем лор предмета
                     List<String> lore = itemMeta.getLore();
                     List<String> expectedLore = new ArrayList<>();
                     expectedLore.add("Фиолетовая дымовая граната");
                     expectedLore.add("Которая вызывает дроп в небольшом радиусе вокруг себя.");
                     expectedLore.add("Данный дроп будет виден всем игрокам на сервере, так что будьте готовы к битве!");
 
-                    // Ensure lore is not null and matches the expected lore
+                    // Убеждаемся, что лор не null и соответствует ожидаемому
                     if (lore != null && lore.equals(expectedLore)) {
+                        // Проверяем, включены ли аирдропы в конфиге
+                        if (!getMineConfig().getBoolean("airdrop_enabled", true)) {
+                            // Если аирдропы отключены, выводим сообщение игроку
+                            e.getPlayer().sendTitle(
+                                    ChatColor.LIGHT_PURPLE + "Хм...", // Первая строка
+                                    ChatColor.DARK_PURPLE + "Вы не знаете, как это использовать.", // Вторая строка
+                                    10, 70, 20 // Время появления, время отображения, время исчезновения
+                            );
+                            return; // Прекращаем выполнение метода
+                        }
+
+                        // Проверяем, что на сервере есть игроки и кулдаун истек
                         if (!e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
                             if (e.getPlayer().getCooldown(Material.AMETHYST_SHARD) <= 1) {
+                                // Создаем аирдроп
                                 new airdropMain(e.getPlayer());
                                 e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 20 * 60 * 10);
 
-                                // Remove one Amethyst Shard from the player's inventory
-                                item.setAmount(item.getAmount() - 1); // Decrease the amount by 1
+                                // Убираем один Amethyst Shard из инвентаря игрока
+                                item.setAmount(item.getAmount() - 1); // Уменьшаем количество на 1
                                 if (item.getAmount() <= 0) {
-                                    e.getPlayer().getInventory().remove(item); // Remove the item if the amount is 0
+                                    e.getPlayer().getInventory().remove(item); // Удаляем предмет, если количество равно 0
                                 }
                             }
                         }
