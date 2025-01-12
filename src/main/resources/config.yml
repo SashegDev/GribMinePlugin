@@ -6,6 +6,14 @@ rarity_list:
   - legendary
 # НЕ МЕНЯТЬ ЛИСТ РЕДКОСТЕЙ!
 
+rarity_colors:
+  common: GRAY
+  uncommon: GREEN
+  rare: BLUE
+  epic: DARK_PURPLE
+  legendary: GOLD
+# увета поддерживающиеся майном но капсом
+
 damage_mod:
   common: 0
   uncommon: 2.5
