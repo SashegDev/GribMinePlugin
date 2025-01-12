@@ -6,6 +6,14 @@ rarity_list:
   - legendary
 # НЕ МЕНЯТЬ ЛИСТ РЕДКОСТЕЙ!
 
+rarity_colors:
+  common: GRAY
+  uncommon: GREEN
+  rare: BLUE
+  epic: DARK_PURPLE
+  legendary: GOLD
+# увета поддерживающиеся майном но капсом
+
 damage_mod:
   common: 0
   uncommon: 2.5
@@ -14,5 +22,51 @@ damage_mod:
   legendary: 5.2
 #Ну это еще можно менять(ЦИФРЫ)
 
-ability_translate:
-  fire: "Пламенный удар"
+# ну.... по идее это должно работать
+#НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
+allowed_weapon_types:
+  - netherite_sword
+  - diamond_sword
+  - iron_sword
+  - golden_sword
+  - stone_sword
+  - wooden_sword
+  - netherite_axe
+  - diamond_axe
+  - iron_axe
+  - golden_axe
+  - stone_axe
+  - wooden_axe
+  - trident
+  - mace
+  - bow
+  - crossbow
+
+# шансы срабатывания абилок, указываются как 0.1 - 10%, 1.0 - 100%
+# если поставить 0 - буквально вырубишь абилку, и челу надо будет рероллить до новой)))))))))))))))))))))))
+ability_chance:
+  fire: 0.7
+  lightStrike: 0.1
+  desiccation: 0.6
+  freeze: 0.3
+  bloodlust: 0.6
+
+
+#Вещи, которые выпадают в дропе(этот лист для обычных предемтов, не рарных)
+#НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
+airdrop_items:
+  - diamond
+  - gold_ingot
+  - iron_ingot
+  - acacia_planks
+
+#кол-во выпадаемых оружий в дропе
+AirDropWeaponGenerateNumber: 3
+
+#кол-во ротаций дропа(сколько раз будет код проходит по листу предметов и добавлять случайный дроп)
+AirDropMaxRotations: 5
+
+#кол-во максимального добавления предетов в 1 ротации
+AirDropMaxItemInOneRot: 32
+
+AirDropTimer: 10
