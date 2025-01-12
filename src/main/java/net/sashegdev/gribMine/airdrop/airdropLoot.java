@@ -3,6 +3,7 @@ package net.sashegdev.gribMine.airdrop;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -76,18 +77,25 @@ public class airdropLoot {
         return getWeapon(weaponMaterial, randomRarity, randomAbility);
     }
 
-    @NotNull
     private static ItemStack getWeapon(Material weaponMaterial, String randomRarity, WeaponAbility randomAbility) {
         ItemStack weapon = new ItemStack(weaponMaterial); // Используем выбранный тип оружия
         ItemMeta meta = weapon.getItemMeta();
         if (meta != null) {
             List<String> lore = new ArrayList<>();
-            lore.add("Редкость: " + randomRarity);
+
+            // Получаем цвет для редкости из конфига
+            ChatColor rarityColor = GribMine.getRarityColor(randomRarity);
+
+            // Добавляем редкость с цветом
+            lore.add("Редкость: "+rarityColor+ randomRarity);
+
+            // Добавляем способность с цветом из конфига
             if (randomAbility != null) {
                 lore.add("Способность: " + randomAbility.getRussianName());
             } else {
                 lore.add("Способность: none");
             }
+
             meta.setLore(lore);
             weapon.setItemMeta(meta);
         }

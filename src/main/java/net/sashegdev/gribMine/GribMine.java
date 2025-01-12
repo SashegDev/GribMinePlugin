@@ -68,6 +68,15 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
     }
 
+    public static ChatColor getRarityColor(String rarity) {
+        String colorName = config.getString("rarity_colors." + rarity.toLowerCase(), "WHITE");
+        try {
+            return ChatColor.valueOf(colorName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ChatColor.WHITE; // Возвращаем белый цвет, если цвет не найден
+        }
+    }
+
     @EventHandler
     public void PlayerAttackEpta(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
@@ -160,8 +169,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         ItemMeta itemMeta = item.getItemMeta();
 
         if (itemMeta != null) {
-            // Set the display name
-            itemMeta.setDisplayName("Воздушное снабжение");
+            // Set the display name with color codes
+            itemMeta.setDisplayName(ChatColor.RESET + "" + ChatColor.LIGHT_PURPLE + "Воздушное снабжение");
 
             // Set the lore
             List<String> lore = new ArrayList<>();
@@ -188,8 +197,9 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             if (item.getType() == Material.AMETHYST_SHARD && item.getItemMeta() != null) {
                 ItemMeta itemMeta = item.getItemMeta();
 
-                // Check for the display name
-                if (itemMeta.getDisplayName().equals("Воздушное снабжение")) {
+                // Check for the display name (ignoring color codes)
+                String displayName = ChatColor.stripColor(itemMeta.getDisplayName());
+                if (displayName.equals("Воздушное снабжение")) {
                     // Check for the lore
                     List<String> lore = itemMeta.getLore();
                     List<String> expectedLore = new ArrayList<>();
@@ -269,7 +279,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         return false;
     }
 
-    //подсказки епта, не знаю заработает ли с /gribadmin weapon set
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
@@ -288,33 +297,34 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("reassemble");
                 completions.add("reset");
             } else if (args.length == 3 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
-                // Подсказки для третьего аргумента
-                completions.add("rarity=");
-                completions.add("ability=");
+                // Подсказки для rarity с цветами из конфига
+                List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
+                for (String rarity : rarities) {
+                    ChatColor color = getRarityColor(rarity);
+                    completions.add(color + rarity); // Добавляем цвет к названию редкости
+                }
             } else if (args.length == 4 && args[0].equalsIgnoreCase("weapon") && args[1].equalsIgnoreCase("set")) {
-                // Подсказки для значений rarity и ability
-                if (args[2].startsWith("rarity=")) {
-                    List<String> rarities = GribMine.getMineConfig().getStringList("rarity_list");
-                    for (String rarity : rarities) {
-                        completions.add("rarity=" + rarity);
-                    }
-                } else if (args[2].startsWith("ability=")) {
-                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
-                    for (String abilityName : abilities.keySet()) {
-                        completions.add("ability=" + abilityName);
+                // Подсказки для ability
+                HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                for (String abilityName : abilities.keySet()) {
+                    // Фильтруем русские названия, оставляем только теги
+                    if (!abilityName.equals(abilities.get(abilityName).getRussianName())) {
+                        completions.add(abilityName);
                     }
                 }
             } else if (args.length == 2 && args[0].equalsIgnoreCase("airdrop")) {
                 // Подсказки для второго аргумента команды airdrop
                 completions.add("summon");
                 completions.add("give");
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("summon")) {
-                // Подсказки для третьего аргумента команды airdrop summon
-                completions.add("atme");
-            } else if (args.length == 3 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
-                // Подсказки для списка игроков
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    completions.add(player.getName());
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("airdrop")) {
+                // Подсказки для третьего аргумента команды airdrop
+                if (args[1].equalsIgnoreCase("summon")) {
+                    completions.add("atme");
+                } else if (args[1].equalsIgnoreCase("give")) {
+                    // Подсказки для списка игроков
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        completions.add(player.getName());
+                    }
                 }
             } else if (args.length == 4 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
                 // Подсказка для числа (количество аирдропов)
@@ -325,7 +335,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         // Фильтруем подсказки по уже введенному тексту
         if (args.length > 0) {
             String lastArg = args[args.length - 1].toLowerCase();
-            completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
+            completions.removeIf(s -> !ChatColor.stripColor(s).toLowerCase().startsWith(lastArg));
         }
 
         return completions;

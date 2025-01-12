@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine.airdrop.commands;
 
+import net.md_5.bungee.api.ChatColor;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import org.bukkit.Bukkit;
@@ -41,7 +42,7 @@ public class summon {
             }
         } else if (subcommand.equals("give")) {
             if (args.length < 4) {
-                sender.sendMessage("/gribadmin airdrop <player> <amount>");
+                sender.sendMessage("/gribadmin airdrop give <player> <amount>");
                 return;
             }
 
@@ -65,11 +66,20 @@ public class summon {
 
             // Выдаем указанное количество предметов
             for (int i = 0; i < amount; i++) {
+                if (targetPlayer.getInventory().firstEmpty() == -1) {
+                    sender.sendMessage(ChatColor.RED + "Инвентарь игрока " + targetPlayer.getName() + " переполнен. Невозможно выдать все предметы.");
+                    break;
+                }
                 GribMine.giveAirSupplyItem(targetPlayer);
             }
+
+            // Уведомление игрока
+            targetPlayer.sendMessage(ChatColor.GREEN + "Вам выдано " + amount + " Воздушное снабжение.");
+
+            // Логирование
+            Bukkit.getLogger().info(sender.getName() + " выдал " + amount + " Воздушное снабжение игроку " + targetPlayer.getName() + ".");
+
             sender.sendMessage("Успешно выдано " + amount + " Воздушное снабжение игроку " + targetPlayer.getName() + ".");
-        } else {
-            sender.sendMessage("Неизвестная подкоманда. Используйте: /<command> <summon|give> [доп. аргументы]");
         }
     }
 }

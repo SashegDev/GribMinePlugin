@@ -35,39 +35,42 @@ public class handleWeaponCommand {
                 sender.sendMessage("Установка информации о оружии...");
 
                 try {
+                    if (args.length < 4) {
+                        sender.sendMessage(ChatColor.RED + "Используйте: /gribadmin weapon set <rarity> <ability>");
+                        return;
+                    }
+
                     ItemStack item = sender.getServer().getPlayer(sender.getName()).getInventory().getItemInMainHand();
                     ItemMeta meta = item.getItemMeta();
-                    //if (WeaponManager.getAllowedWeaponTypes().contains(item.getType().toString())) {
-                        List<String> lore = new ArrayList<String>();
-                        //Хэш для строгого порядка описания на выходе
-                        HashMap<String, String> lines = new HashMap<String, String>();
+                    List<String> lore = new ArrayList<>();
 
-                        for (String arg : args) {
+                    // Получаем rarity и ability из аргументов
+                    String rarity = args[2].strip();
+                    String abilityTag = args[3].strip();
 
-                            String[] m = arg.split("=");
-                            if (m[0].strip().equals("rarity")) {
-                                lines.put("rarity", m[1].strip());
-                            }
-                            if (m[0].strip().equals("ability")) {
-                                lines.put("ability", m[1].strip());
-                            }
-                        }
+                    // Проверяем, что рарность существует
+                    if (!WeaponManager.getRarityList().contains(rarity)) {
+                        sender.sendMessage(ChatColor.RED + "Некорректная рарность: " + rarity);
+                        return;
+                    }
 
-                        lore.add("Редкость: " + (lines.get("rarity") != null ? lines.get("rarity") : "common"));
+                    // Проверяем, что способность существует
+                    HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
+                    if (!abilities.containsKey(abilityTag)) {
+                        sender.sendMessage(ChatColor.RED + "Некорректная способность: " + abilityTag);
+                        return;
+                    }
 
-                        lore.add("Способность: " + WeaponManager.getWeaponAbilities().get(lines.get("ability")).getRussianName());
+                    // Устанавливаем лор
+                    lore.add("Редкость: " + rarity);
+                    lore.add("Способность: " + abilities.get(abilityTag).getRussianName());
 
-                        meta.setLore(lore);
+                    meta.setLore(lore);
+                    item.setItemMeta(meta);
 
-                        item.setItemMeta(meta);
-                    //} else {
-
-                        //throw new ItemTypeException("Wrong type of object");
-                    //}
+                    sender.sendMessage(ChatColor.GREEN + "Информация о оружии успешно установлена.");
                 } catch (NullPointerException ex) {
-                    sender.sendMessage(ChatColor.RED+ex.getMessage());
-                //} catch (ItemTypeException ex) {
-                    //sender.sendMessage(ex.getMessage());
+                    sender.sendMessage(ChatColor.RED + "Ошибка: " + ex.getMessage());
                 }
                 break;
             case "reassemble":
