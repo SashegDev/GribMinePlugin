@@ -27,8 +27,8 @@ public class WeaponManager implements Listener {
 
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         WeaponManager.rarityList = rarityList;
+        WeaponManager.damageModifiers = damageModifiers; // This should now be properly initialized
         playerRarityMap = new HashMap<>();
-        WeaponManager.damageModifiers = damageModifiers;
         weaponAbilitiesForRarity.put("common", new ArrayList<>());
         weaponAbilitiesForRarity.put("uncommon", new ArrayList<>());
         weaponAbilitiesForRarity.put("rare", new ArrayList<>());

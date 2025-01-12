@@ -6,6 +6,7 @@ import net.sashegdev.gribMine.commands.handleWeaponCommand;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,11 +23,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Logger;
 
 public final class GribMine extends JavaPlugin implements CommandExecutor, Listener {
@@ -35,7 +34,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     static FileConfiguration config;
 
     private WeaponManager weaponManager;
-    private airdropMain airdropMain;
 
     @Override
     public void onEnable() {
@@ -43,39 +41,31 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         saveDefaultConfig();
         config = getConfig();
 
-        // Инициализируем WeaponManager
-        List<String> rarityList = config.getStringList("rarity_list");
-        HashMap<String, Double> damageModifiers = new HashMap<>();
-        for (String rarity : rarityList) {
-            double modifier = config.getDouble("damage_mod." + rarity, 1.0);
-            damageModifiers.put(rarity, modifier);
-        }
-        weaponManager = new WeaponManager(rarityList, damageModifiers);
+        List<String> rarityList;
+        HashMap<String, Double> damageModifiers;
+        {
+            // Initialize the weaponManager in a static block
+            rarityList = getMineConfig().getStringList("rarity_list");
+            damageModifiers = new HashMap<>();
 
-        // Инициализируем airdropMain
-        airdropMain = new airdropMain(); // Создайте экземпляр airdropMain
+            // Retrieve damage modifiers from the configuration
+            Map<String, Object> damageModConfig = Objects.requireNonNull(getMineConfig().getConfigurationSection("damage_mod")).getValues(false);
+            for (Map.Entry<String, Object> entry : damageModConfig.entrySet()) {
+                String rarity = entry.getKey();
+                double modifier = Double.parseDouble(entry.getValue().toString());
+                damageModifiers.put(rarity, modifier);
+            }
+        }
+
+        weaponManager = new WeaponManager(rarityList, damageModifiers); // Pass the initialized HashMap
 
         // Регистрируем слушатели
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(weaponManager, this);
-        getServer().getPluginManager().registerEvents(airdropMain, this); // Теперь это не null
 
         logger.info("GribMine Plugin initialized ;)");
         logger.info("Версия плагина: " + getDescription().getVersion());
-        logger.info("===RARITY_LIST===");
-        for (String string : rarityList) {
-            logger.info(string);
-        }
-        logger.info("===DAMAGE_MOD==");
-        for (String rarity : rarityList) {
-            double modifier = config.getDouble("damage_mod." + rarity, 1.0);
-            logger.info("damage_mod." + rarity + ": " + modifier);
-        }
 
-        getCommand("gribadmin").setExecutor(this);
-
-        //чисто для того что бы чекать инвент каждый тик вместо кривого листенера
-        WeaponManager.ChangeWeapon();
+        Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
     }
 
     @EventHandler
@@ -164,21 +154,63 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
     }
 
+    public static void giveAirSupplyItem(Player player) {
+        // Create the ItemStack for the Amethyst Shard
+        ItemStack item = new ItemStack(Material.AMETHYST_SHARD, 1);
+        ItemMeta itemMeta = item.getItemMeta();
+
+        if (itemMeta != null) {
+            // Set the display name
+            itemMeta.setDisplayName("Воздушное снабжение");
+
+            // Set the lore
+            List<String> lore = new ArrayList<>();
+            lore.add("Фиолетовая дымовая граната");
+            lore.add("Которая вызывает дроп в небольшом радиусе вокруг себя.");
+            lore.add("Данный дроп будет виден всем игрокам на сервере, так что будьте готовы к битве!");
+            itemMeta.setLore(lore);
+
+            // Apply the meta to the item
+            item.setItemMeta(itemMeta);
+        }
+
+        // Give the item to the player
+        player.getInventory().addItem(item);
+    }
+
     @EventHandler
     public void ClickHandler(PlayerInteractEvent e) {
         if (e.getItem() == null) return;
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
-            if (e.getItem().getType() == Material.AMETHYST_SHARD && e.getItem().getItemMeta().getLore() == null
-                && e.getItem().getItemMeta().getDisplayName().equals("бог, дай мне че-нить")) {
-                if (!e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
-                    if (e.getPlayer().getCooldown(Material.AMETHYST_SHARD) <= 1) {
-                        int max_list = Bukkit.getOnlinePlayers().size();
-                        ArrayList<Player> player_list = new ArrayList<>(Bukkit.getOnlinePlayers());
-                        Random rand = new Random();
-                        int chosen = rand.nextInt(max_list);
-                        new airdropMain(player_list.get(chosen), 1, 1);
-                        e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 300);
-                        e.getPlayer().getInventory().removeItem(new ItemStack(e.getItem().getType(), 1));
+            ItemStack item = e.getItem();
+
+            // Check if the item is an Amethyst Shard
+            if (item.getType() == Material.AMETHYST_SHARD && item.getItemMeta() != null) {
+                ItemMeta itemMeta = item.getItemMeta();
+
+                // Check for the display name
+                if (itemMeta.getDisplayName().equals("Воздушное снабжение")) {
+                    // Check for the lore
+                    List<String> lore = itemMeta.getLore();
+                    List<String> expectedLore = new ArrayList<>();
+                    expectedLore.add("Фиолетовая дымовая граната");
+                    expectedLore.add("Которая вызывает дроп в небольшом радиусе вокруг себя.");
+                    expectedLore.add("Данный дроп будет виден всем игрокам на сервере, так что будьте готовы к битве!");
+
+                    // Ensure lore is not null and matches the expected lore
+                    if (lore != null && lore.equals(expectedLore)) {
+                        if (!e.getPlayer().getServer().getOnlinePlayers().isEmpty()) {
+                            if (e.getPlayer().getCooldown(Material.AMETHYST_SHARD) <= 1) {
+                                new airdropMain(e.getPlayer());
+                                e.getPlayer().setCooldown(Material.AMETHYST_SHARD, 20 * 60 * 10);
+
+                                // Remove one Amethyst Shard from the player's inventory
+                                item.setAmount(item.getAmount() - 1); // Decrease the amount by 1
+                                if (item.getAmount() <= 0) {
+                                    e.getPlayer().getInventory().remove(item); // Remove the item if the amount is 0
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -186,7 +218,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         if (command.getName().equalsIgnoreCase("gribadmin")) {
             if (args.length == 0) {
                 sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon>");
@@ -196,6 +228,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 case "reload":
                     reloadConfig();
                     sender.sendMessage("Конфигурация перезагружена.");
+                    sender.sendMessage(ChatColor.RED+"ЛУЧШЕ ИСПОЛЬЗУЙ /reload confirm ТАК КАК ЭТА ФУНКЦИЯ НЕ ВСЕГДА РАБОТАЕТ");
 
                     HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                     abilities.get("fire").setChance(config.getDouble("ability_chance.fire"));
@@ -238,7 +271,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     //подсказки епта, не знаю заработает ли с /gribadmin weapon set
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
 
         if (command.getName().equalsIgnoreCase("gribadmin")) {
@@ -276,6 +309,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 //TODO: починить эту хуету, так как /gribmine airdrop summon не показывает еще atme
             } else if (args.length == 2 && args[0].equalsIgnoreCase("airdrop")) {
                 completions.add("summon");
+                completions.add("give");
             } else if (args.length == 3 && args[0].equalsIgnoreCase("summon")) {
                 completions.add("atme");
             }

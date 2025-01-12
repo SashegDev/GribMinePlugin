@@ -2,7 +2,6 @@ package net.sashegdev.gribMine.airdrop;
 
 import net.sashegdev.gribMine.GribMine;
 import org.bukkit.*;
-import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -10,13 +9,8 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,39 +23,49 @@ import java.util.Random;
 
 public class airdropMain implements Listener {
 
-    private Location location;
-    private final static List<airdropMain> airdropList = new ArrayList<>();
-    private static LivingEntity armor;
+    private Block barrelBlock;
+    private final Location location;
+    private static final List<airdropMain> airdropList = new ArrayList<>();
+    private LivingEntity armor;
 
     public airdropMain(@NotNull Player p) {
-        this(p, 100, 100);
+        this(p, 350, 350);
     }
 
     public airdropMain(@NotNull Player p, int w, int h) {
         this.location = p.getLocation().add(new Random().nextInt(-w, w), 0, new Random().nextInt(-h, h));
-        this.location.setY(p.getLocation().getY() + 100); // Устанавливаем высоту
+        this.location.setY(p.getLocation().getY() + 100); // Set height
 
         System.out.println("Airdrop! X:" + location.getX() + " Z:" + location.getZ());
         airdropList.add(this);
 
+        // Spawn particle column at player's location
+        spawnParticleColumn(p.getLocation());
+
         new BukkitRunnable() {
             @Override
             public void run() {
-                // Создаем ArmorStand
-                armor = p.getWorld().spawn(location, ArmorStand.class);
-                armor.setInvisible(true); // ArmorStand невидим
-                armor.setInvulnerable(true); // ArmorStand не получает урона
-                armor.setCustomName(ChatColor.RED + "AirDrop"); // Устанавливаем имя
-                armor.setCustomNameVisible(true); // Имя будет видно игрокам
-                armor.setCanPickupItems(false); // Запретить подбирать предметы
+                // Get the highest block Y at the X and Z coordinates
+                int highestY = p.getWorld().getHighestBlockYAt(location.getBlockX(), location.getBlockZ());
+                // Set the Y coordinate to be above the highest block
+                location.setY(highestY + 1); // Spawn 1 block above the highest block
 
-                // Устанавливаем бочку на голову ArmorStand
+                // Create ArmorStand
+                armor = p.getWorld().spawn(location.clone().add(0, 1, 0), ArmorStand.class); // Adjust Y position
+                armor.setInvisible(true);
+                armor.setInvulnerable(true);
+                armor.setCustomName(ChatColor.RED + "Воздушное Снабжение");
+                armor.setCustomNameVisible(true);
+                armor.setCanPickupItems(false);
                 Objects.requireNonNull(armor.getEquipment()).setHelmet(new ItemStack(Material.BARREL));
 
-                // Добавляем эффект максимального медленного падения
-                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 255));
+                // Add slow falling effect
+                armor.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, Integer.MAX_VALUE, 1)); // Уменьшите уровень эффекта
 
-                // Отправляем сообщение всем игрокам
+                // Start slow fall
+                startSlowFall();
+
+                // Notify players
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.sendMessage(ChatColor.GRAY +
                             "Я увидел самолет...\n" +
@@ -75,11 +79,35 @@ public class airdropMain implements Listener {
         }.runTaskLater(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 20 * 25);
     }
 
-    public static void startCheckingForGround() {
+    private void spawnParticleColumn(Location playerLocation) {
+        // Start a new BukkitRunnable to spawn particles for 20 seconds
+        new BukkitRunnable() {
+            int ticks = 0; // Counter for ticks
+
+            @Override
+            public void run() {
+                // Spawn particles every tick for 20 seconds (20 seconds = 400 ticks)
+                if (ticks < 400) {
+                    // Get the starting Y coordinate
+                    double startY = playerLocation.getY(); // Use double for more precision
+                    // Loop to spawn particles from startY to startY + 18 with a step of 0.2
+                    for (double y = startY; y <= startY + 18; y += 0.2) {
+                        Location particleLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), y, playerLocation.getZ());
+                        Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.LARGE_SMOKE, particleLocation, 1, 0, 0, 0, 0.001);
+                    }
+                    ticks++;
+                } else {
+                    cancel(); // Stop the task after 20 seconds
+                }
+            }
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Start immediately and run every tick
+    }
+
+    public void startCheckingForGround() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (armor != null && armor.isOnGround()) {
+                if ((armor != null && armor.isOnGround())) {
                     activate(); // Call the activate method when armor is on the ground
                     cancel(); // Stop this task
                 }
@@ -87,108 +115,45 @@ public class airdropMain implements Listener {
         }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Check every tick (1 tick = 1/20 second)
     }
 
-    public static void activate() {
-        // Добавляем лут в бочку
-        Block barrelBlock = addLootToBarrel(); // Изменяем метод, чтобы он возвращал блок бочки
-
-        // Получаем время таймера из конфигурации
-        int timerDuration = GribMine.getMineConfig().getInt("AirDropTimer"); // Время в секундах
-
-        // Создаем новый BukkitRunnable для отсчета времени
+    public void startSlowFall() {
         new BukkitRunnable() {
-            int timeLeft = timerDuration; // Время, оставшееся до открытия бочки
+            double fallSpeed = 0.1; // Скорость падения
+            double currentY = armor.getLocation().getY(); // Текущая высота
 
             @Override
             public void run() {
-                // Проверяем, осталось ли время
-                if (timeLeft > 0) {
-                    // Отображаем оставшееся время над бочкой
-                    armor.setCustomName(ChatColor.RED + "AirDrop (Открытие через " + ChatColor.RED + timeLeft + ChatColor.RED + " секунд)");
-                    timeLeft--; // У меньшаем оставшееся время
+                if (armor != null && !armor.isOnGround()) {
+                    currentY -= fallSpeed; // Уменьшаем Y координату
+                    armor.teleport(new Location(armor.getWorld(), armor.getLocation().getX(), currentY, armor.getLocation().getZ()));
                 } else {
-                    // Удаляем тег Lock с бочки
-                    if (barrelBlock.getState() instanceof Barrel barrel) {
-                        PersistentDataContainer container = barrel.getPersistentDataContainer();
-                        container.remove(new NamespacedKey("gribmine", "Lock")); // Удаляем тег Lock с бочки
-                    }
-
-                    // Обновляем имя ArmorStand
-                    armor.setCustomName(ChatColor.GREEN + "AirDrop (Теперь открыто!)");
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            armor.remove(); // Удаляем ArmorStand после открытия
-                        }
-                    }.runTaskLater(GribMine.getPlugin(GribMine.class), 3 * 20);
-                    cancel(); // Останавливаем задачу
+                    cancel(); // Останавливаем задачу, если арморстенд на земле
                 }
             }
-        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 20); // Запускаем каждую секунду (20 тиков)
+        }.runTaskTimer(GribMine.getPlugin(GribMine.class), 0, 1); // Запускаем каждую тика
     }
 
-    private static Block addLootToBarrel() {
-        // Устанавливаем блок на место
-        Block barrelBlock = armor.getLocation().getBlock();
+    public void activate() {
+        // Добавляем лут в бочку
+        barrelBlock = addLootToBarrel();
+        armor.remove();
+    }
+
+    private Block addLootToBarrel() {
+        // Set the block type to barrel
+        barrelBlock = armor.getLocation().getBlock(); // Store the reference to the barrel block
         barrelBlock.setType(Material.BARREL);
 
-        // Получаем BlockData для бочки и устанавливаем направление
+        // Set the block data for the barrel
         BlockData blockData = barrelBlock.getBlockData();
         if (blockData instanceof Directional directional) {
-            directional.setFacing(BlockFace.WEST); // Устанавливаем направление на запад
+            directional.setFacing(BlockFace.WEST); // Set direction to west
             barrelBlock.setBlockData(directional);
         }
 
-        // Добавляем лут в бочку
+        // Add loot to the barrel
         airdropLoot.addLoot(barrelBlock);
 
-        // Добавляем тег к бочке
-        if (barrelBlock.getState() instanceof Barrel barrel) {
-            // Получаем PersistentDataContainer для бочки
-            PersistentDataContainer container = barrel.getPersistentDataContainer();
-            String randomKey = generateRandomKey(); // Генерируем случайный ключ
-            container.set(new NamespacedKey("gribmine", "Lock"), PersistentDataType.STRING, randomKey);
-            container.set(new NamespacedKey("gribmine", "Tag"), PersistentDataType.STRING, "AirDrop");
-        }
-
-        return barrelBlock; // Возвращаем блок бочки
-    }
-
-    private static String generateRandomKey() {
-        // Генерация случайного ключа (например, 10 случайных символов)
-        StringBuilder key = new StringBuilder();
-        Random random = new Random();
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for (int i = 0; i < 10; i++) {
-            key.append(characters.charAt(random.nextInt(characters.length())));
-        }
-        return key.toString();
-    }
-
-    @EventHandler
-    public void NononoMisterFishYouDontWantBreakTheAirDrop(BlockBreakEvent event) {
-        Player pl = event.getPlayer();
-        Block block = event.getBlock();
-
-        // Проверяем, является ли блок бочкой
-        if (block.getState() instanceof Barrel barrel) {
-            // Получаем первый предмет в инвентаре бочки
-            ItemStack item = barrel.getInventory().getItem(0);
-
-            // Проверяем, существует ли предмет и имеет ли он метаданные
-            if (item != null && item.hasItemMeta()) {
-                // Получаем тег Lock
-                String key = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("gribmine", "Lock"), PersistentDataType.STRING);
-
-                // Получаем тег Tag
-                String tag = item.getItemMeta().getPersistentDataContainer().get(new NamespacedKey("gribmine", "Tag"), PersistentDataType.STRING);
-
-                // Проверяем, есть ли тег Tag со значением "AirDrop" и тег Lock
-                if ("AirDrop".equals(tag) && key != null) {
-                    event.setCancelled(true);
-                    pl.sendMessage(ChatColor.RED + "AirDrop cannot be broken by player");
-                }
-            }
-        }
+        return barrelBlock; // Return the barrel block
     }
 
     public Location getLocation() {
