@@ -48,17 +48,24 @@ public class UpdateChecker {
 
                     plugin.getLogger().info("Найдена версия: " + tagName + " (prerelease: " + isPrerelease + ")");
 
-                    if ((versionType.equals("release") && !isPrerelease) ||
-                            (versionType.equals("beta") && isPrerelease) ||
-                            (versionType.equals("nightly") && tagName.contains("nightly"))) {
+                    // Проверяем тип версии
+                    boolean isVersionMatch = false;
 
-                        if (isNewerVersion(tagName, currentVersion)) {
-                            plugin.getLogger().info("Найдена новая версия: " + tagName);
-                            downloadNewVersion(release, plugin);
-                            break;
-                        } else {
-                            plugin.getLogger().info("Версия " + tagName + " не является новой.");
-                        }
+                    if (versionType.equals("release")) {
+                        // Для release версий игнорируем prerelease
+                        isVersionMatch = !isPrerelease;
+                    } else if (versionType.equals("beta") || versionType.equals("nightly")) {
+                        // Для beta и nightly игнорируем параметр prerelease
+                        isVersionMatch = true;
+                    }
+
+                    // Если версия подходит, проверяем, является ли она новой
+                    if (isVersionMatch && isNewerVersion(tagName, currentVersion)) {
+                        plugin.getLogger().info("Найдена новая версия: " + tagName);
+                        downloadNewVersion(release, plugin);
+                        break;
+                    } else {
+                        plugin.getLogger().info("Версия " + tagName + " не является новой или не подходит по типу.");
                     }
                 }
             } else {
