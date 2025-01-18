@@ -23,7 +23,7 @@ public class UpdateChecker {
     public static void checkForUpdates(GribMine plugin) {
         if (!plugin.getConfig().getBoolean("check-for-updates", true)) {
             plugin.getLogger().info("Автопроверка обновлений отключена.");
-            return; // Автопроверка отключена
+            return;
         }
 
         String versionType = plugin.getConfig().getString("version-type", "release").toLowerCase();
@@ -48,13 +48,11 @@ public class UpdateChecker {
 
                     plugin.getLogger().info("Найдена версия: " + tagName + " (prerelease: " + isPrerelease + ")");
 
-                    // Проверяем тип версии
                     if ((versionType.equals("release") && !isPrerelease) ||
                             (versionType.equals("beta") && isPrerelease) ||
                             (versionType.equals("nightly") && tagName.contains("nightly"))) {
 
                         if (isNewerVersion(tagName, currentVersion)) {
-                            // Новая версия найдена
                             plugin.getLogger().info("Найдена новая версия: " + tagName);
                             downloadNewVersion(release, plugin);
                             break;

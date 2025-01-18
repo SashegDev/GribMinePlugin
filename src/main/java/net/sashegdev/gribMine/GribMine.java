@@ -303,16 +303,16 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     }
     @Override
     public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
-        if (command.getName().equalsIgnoreCase("gribadmin")) {
+        if (command.getName().equalsIgnoreCase("gribadmin") && sender.isOp()) {
             if (args.length == 0) {
-                sender.sendMessage("Используйте /gribadmin <reload|get_config|weapon|airdrop>");
+                sender.sendMessage("Используйте /gribadmin <reload|check_update|get_config|weapon|airdrop>");
                 return true;
             }
             switch (args[0].toLowerCase()) {
                 case "reload":
                     reloadConfig();
                     sender.sendMessage("Конфигурация перезагружена.");
-                    sender.sendMessage(ChatColor.RED+"ЛУЧШЕ ИСПОЛЬЗУЙ /reload confirm ТАК КАК ЭТА ФУНКЦИЯ НЕ ВСЕГДА РАБОТАЕТ");
+                    sender.sendMessage(ChatColor.RED + "ЛУЧШЕ ИСПОЛЬЗУЙ /reload confirm ТАК КАК ЭТА ФУНКЦИЯ НЕ ВСЕГДА РАБОТАЕТ");
 
                     HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                     abilities.get("fire").setChance(config.getDouble("ability_chance.fire"));
@@ -321,6 +321,11 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     abilities.get("freeze").setChance(config.getDouble("ability_chance.freeze"));
                     abilities.get("bloodlust").setChance(config.getDouble("ability_chance.bloodlust"));
 
+                    break;
+                case "check_update":
+                    // Вызываем проверку обновлений
+                    UpdateChecker.checkForUpdates(this);
+                    sender.sendMessage(ChatColor.GREEN + "Проверка обновлений запущена.");
                     break;
                 case "get_config":
                     StringBuilder configMessage = new StringBuilder("Конфигурация:\n");
@@ -362,6 +367,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             if (args.length == 1) {
                 // Подсказки для первого аргумента
                 completions.add("reload");
+                completions.add("check_update");
                 completions.add("get_config");
                 completions.add("weapon");
                 completions.add("airdrop");
