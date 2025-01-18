@@ -1,4 +1,4 @@
-package net.sashegdev.gribMine.airdrop;
+package net.sashegdev.gribMine;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -22,11 +22,14 @@ public class UpdateChecker {
 
     public static void checkForUpdates(GribMine plugin) {
         if (!plugin.getConfig().getBoolean("check-for-updates", true)) {
+            plugin.getLogger().info("Автопроверка обновлений отключена.");
             return; // Автопроверка отключена
         }
 
         String versionType = plugin.getConfig().getString("version-type", "release").toLowerCase();
         String currentVersion = plugin.getDescription().getVersion();
+        plugin.getLogger().info("Текущая версия: " + currentVersion);
+        plugin.getLogger().info("Тип версии для проверки: " + versionType);
 
         try {
             URL url = new URL(GITHUB_RELEASES_URL);
@@ -43,6 +46,8 @@ public class UpdateChecker {
                     String tagName = release.get("tag_name").getAsString();
                     boolean isPrerelease = release.get("prerelease").getAsBoolean();
 
+                    plugin.getLogger().info("Найдена версия: " + tagName + " (prerelease: " + isPrerelease + ")");
+
                     // Проверяем тип версии
                     if ((versionType.equals("release") && !isPrerelease) ||
                             (versionType.equals("beta") && isPrerelease) ||
@@ -53,6 +58,8 @@ public class UpdateChecker {
                             plugin.getLogger().info("Найдена новая версия: " + tagName);
                             downloadNewVersion(release, plugin);
                             break;
+                        } else {
+                            plugin.getLogger().info("Версия " + tagName + " не является новой.");
                         }
                     }
                 }
@@ -65,9 +72,12 @@ public class UpdateChecker {
     }
 
     private static boolean isNewerVersion(String newVersion, String currentVersion) {
-        // Убираем возможные префиксы (например, "v")
-        newVersion = newVersion.replace("v", "").replace("V", "");
-        currentVersion = currentVersion.replace("v", "").replace("V", "");
+        // Убираем возможные префиксы (например, "v", "beta-", "alpha-")
+        newVersion = newVersion.replaceAll("[^0-9.]", ""); // Удаляем все нечисловые символы, кроме точек
+        currentVersion = currentVersion.replaceAll("[^0-9.]", ""); // Удаляем все нечисловые символы, кроме точек
+
+        System.out.println("Очищенная новая версия: " + newVersion);
+        System.out.println("Очищенная текущая версия: " + currentVersion);
 
         // Разбиваем версии на части
         String[] newParts = newVersion.split("\\.");
@@ -91,22 +101,37 @@ public class UpdateChecker {
     private static void downloadNewVersion(JsonObject release, GribMine plugin) {
         try {
             JsonArray assets = release.getAsJsonArray("assets");
+            String tagName = release.get("tag_name").getAsString(); // Получаем версию из тега
+            String expectedFileName = "gribmineplugin-" + tagName + ".jar"; // Формируем имя файла
+
+            // Удаляем старую версию плагина, если она существует
+            File oldPluginFile = new File(plugin.getDataFolder().getParent(), "gribmineplugin-1.3.jar");
+            if (oldPluginFile.exists()) {
+                oldPluginFile.delete();
+                plugin.getLogger().info("Старая версия плагина удалена.");
+            }
+
             for (JsonElement assetElement : assets) {
                 JsonObject asset = assetElement.getAsJsonObject();
                 String assetName = asset.get("name").getAsString();
 
-                if (assetName.equals(PLUGIN_NAME)) {
+                // Проверяем, соответствует ли имя файла ожидаемому
+                if (assetName.equalsIgnoreCase(expectedFileName)) {
                     String downloadUrl = asset.get("browser_download_url").getAsString();
-                    File pluginFile = new File(plugin.getDataFolder().getParent(), PLUGIN_NAME);
+                    File pluginFile = new File(plugin.getDataFolder().getParent(), expectedFileName);
 
                     // Скачиваем новую версию
                     URL url = new URL(downloadUrl);
                     Files.copy(url.openStream(), pluginFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                    plugin.getLogger().info("Новая версия успешно загружена. Перезагрузите сервер для применения изменений.");
-                    break;
+                    plugin.getLogger().info("Новая версия успешно загружена: " + expectedFileName);
+                    plugin.getLogger().info("Перезагрузите сервер для применения изменений.");
+                    return; // Выходим из метода после успешной загрузки
                 }
             }
+
+            // Если файл не найден
+            plugin.getLogger().warning("Файл " + expectedFileName + " не найден в ассетах.");
         } catch (IOException e) {
             plugin.getLogger().warning("Ошибка при загрузке новой версии: " + e.getMessage());
         }

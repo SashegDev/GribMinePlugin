@@ -1,6 +1,5 @@
 package net.sashegdev.gribMine;
 
-import net.sashegdev.gribMine.airdrop.UpdateChecker;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import net.sashegdev.gribMine.airdrop.commands.summon;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
@@ -82,8 +81,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         getServer().getPluginManager().registerEvents(this, this);
 
         logger.info("GribMine Plugin initialized ;)");
-        //logger.info("Версия плагина: " + getDescription().getVersion());
-        logger.info("Версия плагина: 1.2- РЕЛИЗ!!!!!!!!");
+        logger.info("Версия плагина: " + getDescription().getVersion());
+        //logger.info("Версия плагина:");
 
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
     }
