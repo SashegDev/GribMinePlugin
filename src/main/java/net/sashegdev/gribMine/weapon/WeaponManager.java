@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine.weapon;
 
+import net.md_5.bungee.api.ChatColor;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.Bukkit;
@@ -25,9 +26,20 @@ public class WeaponManager implements Listener {
     // Список допустимых типов оружия (ТЕПЕРЬ В КОНФИГЕ)
     private static final List<String> allowedWeaponTypes = GribMine.getMineConfig().getStringList("allowed_weapon_types");
 
+    private static final Map<String, ChatColor> rarityColors = new HashMap<>();
+
+    static {
+        rarityColors.put("common", ChatColor.GRAY);
+        rarityColors.put("uncommon", ChatColor.GREEN);
+        rarityColors.put("rare", ChatColor.BLUE);
+        rarityColors.put("epic", ChatColor.LIGHT_PURPLE);
+        rarityColors.put("legendary", ChatColor.GOLD);
+    }
+
     public WeaponManager(List<String> rarityList, HashMap<String, Double> damageModifiers) {
         WeaponManager.rarityList = rarityList;
-        WeaponManager.damageModifiers = damageModifiers; // This should now be properly initialized
+        // Инициализация damageModifiers, если он равен null
+        WeaponManager.damageModifiers = damageModifiers != null ? damageModifiers : new HashMap<>();
         playerRarityMap = new HashMap<>();
         weaponAbilitiesForRarity.put("common", new ArrayList<>());
         weaponAbilitiesForRarity.put("uncommon", new ArrayList<>());
@@ -49,8 +61,16 @@ public class WeaponManager implements Listener {
         addAbility(new SirenSong().getName(), "epic", new SirenSong());
         addAbility(new Sacrifice().getName(), "legendary", new Sacrifice());
         addAbility(new ShadowCloak().getName(), "uncommon", new ShadowCloak());
-        //addAbility(new FlamingDance().getName(), "common", new FlamingDance());
+        addAbility(new FlamingDance().getName(), "common", new FlamingDance());
         addAbility(new Suffocation().getName(), "rare", new Suffocation());
+
+        // Запускаем ChangeWeapon каждый тик
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                ChangeWeapon();
+            }
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0L, 1L); // 0L - начальная задержка, 1L - период (1 тик)
     }
 
     // Метод для добавления способностей к оружию
@@ -64,83 +84,88 @@ public class WeaponManager implements Listener {
         return weaponAbilities.get(name).getName();
     }
 
-    //TODO: заменить на другой ивент так как этот хуйня, лучше конешн что бы вообще проверял каждый тик у каждого игрока, но тогда тпс упадет
+    private static final HashMap<UUID, String> lastRarityCache = new HashMap<>();
+    private static final HashMap<UUID, Double> lastDamageModifierCache = new HashMap<>();
 
     public static void ChangeWeapon() {
         new BukkitRunnable() {
-
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     ItemStack item = player.getInventory().getItemInMainHand();
-                    Location loc = player.getLocation();
+                    if (item == null || item.getType().isAir()) continue; // Пропускаем, если в руке ничего нет
 
-                    // Получаем ItemMeta предмета
                     ItemMeta itemMeta = item.getItemMeta();
-                    if (itemMeta != null) {
-                        List<String> lore = itemMeta.getLore();
-                        String rarity = null;
-                        String passiveAbility = null;
+                    if (itemMeta == null) continue;
 
-                        // Проверяем наличие тега рарности и способности в лоре
-                        if (lore != null) {
-                            for (String line : lore) {
-                                if (line.startsWith("Редкость: ")) {
-                                    rarity = line.substring(10);
-                                } else if (line.startsWith("Способность: ")) {
-                                    passiveAbility = line.substring(13);
-                                }
-                            }
+                    // Получаем текущую редкость
+                    String rarity = getRarityFromLore(itemMeta.getLore());
+                    if (rarity == null || !rarityList.contains(rarity)) {
+                        rarity = rarityList.get(0); // Минимальная редкость
+                    }
+
+                    // Получаем текущую способность
+                    String passiveAbility = getPassiveAbilityFromLore(itemMeta.getLore());
+                    if (passiveAbility == null) {
+                        passiveAbility = "none"; // Если способность не найдена
+                    }
+
+                    // Получаем текущий модификатор урона
+                    double damageModifier = getDamageModifier(rarity);
+
+                    // Проверяем, нужно ли обновить предмет
+                    UUID playerId = player.getUniqueId();
+                    String lastRarity = lastRarityCache.get(playerId);
+                    Double lastDamageModifier = lastDamageModifierCache.get(playerId);
+
+                    // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
+                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !itemMeta.hasLore() || !itemMeta.hasAttributeModifiers()) {
+                        // Обновляем кэш
+                        lastRarityCache.put(playerId, rarity);
+                        lastDamageModifierCache.put(playerId, damageModifier);
+
+                        // Обновляем название и лор
+                        String displayName = itemMeta.getDisplayName();
+                        if (displayName == null || displayName.isEmpty()) {
+                            displayName = item.getType().toString().toLowerCase().replace("_", " ");
+                            displayName = capitalize(displayName.trim());
+                        }
+                        ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
+                        itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
+                        itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility));
+
+                        // Обновляем модификатор урона
+                        if (itemMeta.hasAttributeModifiers()) {
+                            itemMeta.removeAttributeModifier(Attribute.ATTACK_DAMAGE);
+                        }
+                        if (damageModifier > 1) {
+                            itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
                         }
 
-                        // Если рарности нет, присваиваем минимальную
-                        if (rarity == null) {
-                            rarity = rarityList.get(0); // Минимальная рарность
-                        } else if (!rarityList.contains(rarity)) {
-                            // Если рарность не соответствует ни одной из известных, присваиваем минимальную
-                            rarity = rarityList.get(0); // Минимальная рарность
-                        }
-
-                        // Проверяем, является ли предмет допустимым типом оружия
-                        String weaponType = item.getType().name().toLowerCase(); // Получаем тип оружия
-                        if (allowedWeaponTypes.contains(weaponType)) {
-                            itemMeta.setLore(createLoreWithRarity(rarity, Objects.requireNonNullElse(passiveAbility, "none"))); // Обновляем лор с модификатором
-
+                        // Применяем изменения к предмету
+                        String weaponType = item.getType().name().toLowerCase(); // Получаем тип оружия в нижнем регистре
+                        if (allowedWeaponTypes.contains(weaponType)) { // Проверяем, разрешен ли этот тип оружия
                             item.setItemMeta(itemMeta);
+                        }
 
-                            // Устанавливаем атрибут урона
-                            if (!itemMeta.hasAttributeModifiers()) {
-                                double damageModifier = getDamageModifier(rarity);
-                                if (damageModifier > 1) {
-                                    itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
-                                    item.setItemMeta(itemMeta);
-                                }
+                        // Обработка рарности
+                        if (rarityList.contains(rarity)) {
+                            // Проверяем, поднимал ли игрок эту рарность ранее
+                            if (!playerRarityMap.containsKey(player.getUniqueId())) {
+                                playerRarityMap.put(player.getUniqueId(), new ArrayList<>());
                             }
 
-                            // Обработка рарности
-                            if (rarityList.contains(rarity)) {
-                                // Проверяем, поднимал ли игрок эту рарность ранее
-                                if (!playerRarityMap.containsKey(player.getUniqueId())) {
-                                    playerRarityMap.put(player.getUniqueId(), new ArrayList<>());
+                            List<String> playerRarities = playerRarityMap.get(player.getUniqueId());
+                            if (!playerRarities.contains(rarity) && allowedWeaponTypes.contains(weaponType)) {
+                                // Если игрок поднимает рарность в первый раз, создаем частицы
+                                Location loc = player.getLocation();
+                                for (int i = 0; i < 30; i++) { // Количество частиц
+                                    double angle = Math.random() * 2 * Math.PI; // Случайный угол
+                                    double x = Math.cos(angle) * 0.5; // Смещение по X
+                                    double z = Math.sin(angle) * 0.5; // Смещение по Z
+                                    player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
                                 }
-
-                                List<String> playerRarities = playerRarityMap.get(player.getUniqueId());
-                                if (!playerRarities.contains(rarity)) {
-                                    // Если игрок поднимает рарность в первый раз, создаем частицы
-                                    for (int i = 0; i < 30; i++) { // Количество частиц
-                                        double angle = Math.random() * 2 * Math.PI; // Случайный угол
-                                        double x = Math.cos(angle) * 0.5; // Смещение по X
-                                        double z = Math.sin(angle) * 0.5; // Смещение по Z
-                                        player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
-                                    }
-                                    playerRarities.add(rarity); // Добавляем рарность в список
-                                }
-                            }
-                            //типо подсвечивание если епик или ЛеГеНдАрКа!
-                            if (Objects.requireNonNull(item.getItemMeta().getLore()).contains("epic")) {
-                                player.spawnParticle(Particle.FLAME,player.getLocation().add(0,1,0),3,0.05);
-                            } else if (Objects.requireNonNull(item.getItemMeta().getLore()).contains("legendary")) {
-                                player.spawnParticle(Particle.SOUL_FIRE_FLAME,player.getLocation().add(0,1,0),3,0.1);
+                                playerRarities.add(rarity); // Добавляем рарность в список
                             }
                         }
                     }
@@ -149,7 +174,30 @@ public class WeaponManager implements Listener {
         }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 1);
     }
 
-    //TODO: нормальную апишку для лора, + добавление цветов для редкостей/абилок
+    private static String getRarityFromLore(List<String> lore) {
+        if (lore != null) {
+            for (String line : lore) {
+                if (line.startsWith("Редкость: ")) {
+                    return ChatColor.stripColor(line).substring(10); // Убираем цветовые коды и возвращаем редкость
+                }
+            }
+        }
+        return null; // Если редкость не найдена
+    }
+
+    // Вспомогательный метод для получения способности из лора
+    private static String getPassiveAbilityFromLore(List<String> lore) {
+        if (lore != null) {
+            for (String line : lore) {
+                if (line.startsWith("Способность: ")) {
+                    return line.substring(13); // Возвращаем способность
+                }
+            }
+        }
+        return "none"; // Если способность не найдена
+    }
+
+    //TODO: пассивки
     private static List<String> createLoreWithRarity(String rarity, String passiveAbility) {
         List<String> lore = new ArrayList<>();
         lore.add("Редкость: " + rarity);
@@ -157,8 +205,18 @@ public class WeaponManager implements Listener {
         return lore;
     }
 
+    private static String capitalize(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
     public static double getDamageModifier(String rarity) {
-        return damageModifiers.getOrDefault(rarity, 1.0); // Возвращаем множитель урона, если рарность не найдена, возвращаем 1.0
+        if (damageModifiers == null) {
+            return 1.0; // Возвращаем значение по умолчанию, если damageModifiers не инициализирован
+        }
+        return damageModifiers.getOrDefault(rarity, 1.0);
     }
 
     public static List<String> getRarityList() {

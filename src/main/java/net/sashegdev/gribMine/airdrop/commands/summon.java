@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.airdrop.commands;
 
 import net.md_5.bungee.api.ChatColor;
+import net.sashegdev.gribMine.DebugLogger;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import org.bukkit.Bukkit;
@@ -77,7 +78,7 @@ public class summon {
             targetPlayer.sendMessage(ChatColor.GREEN + "Вам выдано " + amount + " Воздушное снабжение.");
 
             // Логирование
-            Bukkit.getLogger().info(sender.getName() + " выдал " + amount + " Воздушное снабжение игроку " + targetPlayer.getName() + ".");
+            DebugLogger.log(sender.getName() + " выдал " + amount + " Воздушное снабжение игроку " + targetPlayer.getName() + ".", DebugLogger.LogLevel.INFO);
 
             sender.sendMessage("Успешно выдано " + amount + " Воздушное снабжение игроку " + targetPlayer.getName() + ".");
         }

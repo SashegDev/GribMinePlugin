@@ -1,11 +1,13 @@
 package net.sashegdev.gribMine.airdrop;
 
+import net.sashegdev.gribMine.DebugLogger;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -19,39 +21,73 @@ public class airdropLoot {
 
     // Инициализация lootTable
     static {
-        // Получаем конфигурацию для аирдропов
-        Map<String, Object> lootConfig = GribMine.getMineConfig().getConfigurationSection("airdrop_items").getValues(false);
-        for (Map.Entry<String, Object> entry : lootConfig.entrySet()) {
-            String itemName = entry.getKey();
-            Map<String, Object> itemData = (Map<String, Object>) entry.getValue();
-            lootTable.put(itemName.toUpperCase(), itemData); // Преобразуем в верхний регистр и добавляем в lootTable
+        ConfigurationSection lootConfigSection = GribMine.getMineConfig().getConfigurationSection("airdrop_items");
+        if (lootConfigSection != null) {
+            for (String itemName : lootConfigSection.getKeys(false)) {
+                ConfigurationSection itemDataSection = lootConfigSection.getConfigurationSection(itemName);
+                if (itemDataSection != null) {
+                    double chance = itemDataSection.getDouble("chance", 0.0);
+                    if (chance <= 0) {
+                        DebugLogger.log("Item " + itemName + " has non-positive chance: " + chance, DebugLogger.LogLevel.WARNING);
+                        continue;
+                    }
+                    int amount = itemDataSection.getInt("amount", 1);
+                    Map<String, Object> itemData = new HashMap<>();
+                    itemData.put("chance", chance);
+                    itemData.put("amount", amount);
+                    lootTable.put(itemName.toUpperCase(), itemData);
+                    DebugLogger.log("Loaded item: " + itemName + " with chance: " + chance + " and amount: " + amount, DebugLogger.LogLevel.INFO);
+                } else {
+                    DebugLogger.log("Invalid item data for " + itemName, DebugLogger.LogLevel.ERROR);
+                }
+            }
+        } else {
+            DebugLogger.log("Airdrop items configuration section not found.", DebugLogger.LogLevel.ERROR);
         }
     }
 
     public static void addLoot(Block block) {
-        // Проверяем, что блок является бочкой
         if (block.getState() instanceof Barrel barrel) {
-            // Добавляем оружие в инвентарь бочки
+            DebugLogger.log("Adding loot to barrel at: " + block.getLocation(), DebugLogger.LogLevel.INFO);
+
+            // Add weapons
             for (int i = 0; i < GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
-                barrel.getInventory().addItem(generateRandomWeapon());
+                ItemStack weapon = generateRandomWeapon();
+                if (weapon != null) {
+                    barrel.getInventory().addItem(weapon);
+                    DebugLogger.log("Added weapon: " + weapon.getType(), DebugLogger.LogLevel.INFO);
+                } else {
+                    DebugLogger.log("Failed to generate a weapon.", DebugLogger.LogLevel.ERROR);
+                }
             }
 
-            // Добавляем рандомный дроп в инвентарь бочки
+            // Add random items
             for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations") + 1); rot > 0; rot--) {
-                // Выбираем случайный предмет с учетом шансов
                 String randomItem = getRandomItemWithChance();
                 if (randomItem != null) {
                     Material material = Material.matchMaterial(randomItem);
                     if (material != null) {
-                        // Получаем количество предметов
                         int amount = getItemAmount(randomItem);
-                        barrel.getInventory().addItem(new ItemStack(material, amount));
+                        ItemStack itemStack = new ItemStack(material, amount);
+                        barrel.getInventory().addItem(itemStack);
+                        DebugLogger.log("Added item: " + material + " x" + amount, DebugLogger.LogLevel.INFO);
+                    } else {
+                        DebugLogger.log("Invalid material: " + randomItem, DebugLogger.LogLevel.ERROR);
                     }
+                } else {
+                    DebugLogger.log("Failed to select a random item.", DebugLogger.LogLevel.ERROR);
                 }
             }
 
-            // Обновляем состояние бочки
-            barrel.update();
+            // Debug: Print barrel inventory contents
+            DebugLogger.log("Barrel inventory contents:", DebugLogger.LogLevel.INFO);
+            for (ItemStack item : barrel.getInventory().getContents()) {
+                if (item != null) {
+                    DebugLogger.log(item.getType() + " x" + item.getAmount(), DebugLogger.LogLevel.INFO);
+                }
+            }
+        } else {
+            DebugLogger.log("Block is not a barrel.", DebugLogger.LogLevel.ERROR);
         }
     }
 
@@ -59,6 +95,13 @@ public class airdropLoot {
         double totalWeight = lootTable.values().stream()
                 .mapToDouble(item -> (double) item.get("chance"))
                 .sum();
+
+        if (totalWeight <= 0) {
+            DebugLogger.log("Total weight is zero or negative. Cannot select a random item.", DebugLogger.LogLevel.ERROR);
+            return null; // or handle it appropriately
+        }
+
+        DebugLogger.log("Total weight: " + totalWeight, DebugLogger.LogLevel.INFO);
 
         double randomValue = ThreadLocalRandom.current().nextDouble(totalWeight);
         double cumulativeWeight = 0.0;

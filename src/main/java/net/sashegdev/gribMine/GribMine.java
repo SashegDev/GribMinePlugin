@@ -1,5 +1,6 @@
 package net.sashegdev.gribMine;
 
+import net.sashegdev.gribMine.airdrop.UpdateChecker;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import net.sashegdev.gribMine.airdrop.commands.summon;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
@@ -31,7 +32,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     Logger logger = getLogger();
     static FileConfiguration config;
-
+    private static GribMine instance;
     private WeaponManager weaponManager;
 
     @Override
@@ -39,6 +40,12 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         // Загружаем конфигурацию
         saveDefaultConfig();
         config = getConfig();
+
+        instance = this;
+
+        if (config.getBoolean("check-for-updates", true)) {
+            UpdateChecker.checkForUpdates(this);
+        }
 
         // Удаляем все ArmorStand с именем аирдропа при запуске плагина
         for (World world : Bukkit.getWorlds()) {
@@ -79,6 +86,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         logger.info("Версия плагина: 1.2- РЕЛИЗ!!!!!!!!");
 
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
+    }
+
+    public static GribMine getInstance() {
+        return instance;
     }
 
     @EventHandler

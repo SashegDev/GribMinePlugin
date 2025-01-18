@@ -79,3 +79,19 @@ Supply:
   amount: 3
 
 airdrop_enabled: true  # true - аирдропы включены, false - отключены
+
+airdrop_falling_speed: 0.00005  # Скорость падения аирдропа (блоков за тик)
+airdrop_update_interval: 10     # Интервал обновления падения (в тиках)
+
+# ДЕБАГ ЛОГИ
+# первый режим отправляет логи в консоль, а второй всем игрокам в на сервере
+debug_logs: true
+chat_debug_logs: true
+
+
+
+# Включить/выключить автопроверку обновлений
+check-for-updates: true
+
+# Тип версии (release, beta, nightly)
+version-type: release
