@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.sashegdev.gribMine.GribMine;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +17,6 @@ import java.nio.file.StandardCopyOption;
 public class UpdateChecker {
 
     private static final String GITHUB_RELEASES_URL = "https://api.github.com/repos/SashegDev/GribMinePlugin/releases";
-    private static final String PLUGIN_NAME = "GribMine.jar"; // Имя файла плагина
 
     public static void checkForUpdates(GribMine plugin) {
         if (!plugin.getConfig().getBoolean("check-for-updates", true)) {

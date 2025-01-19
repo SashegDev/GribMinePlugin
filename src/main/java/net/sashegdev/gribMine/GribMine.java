@@ -1,14 +1,16 @@
 package net.sashegdev.gribMine;
 
+import net.sashegdev.gribMine.abilities.AbilityInitializer;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import net.sashegdev.gribMine.airdrop.commands.summon;
+import net.sashegdev.gribMine.commands.ToolCommand;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
+import net.sashegdev.gribMine.tool.ToolAbilityManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,55 +38,34 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @Override
     public void onEnable() {
-        // Загружаем конфигурацию
-        saveDefaultConfig();
-        config = getConfig();
-
         instance = this;
 
-        if (config.getBoolean("check-for-updates", true)) {
-            UpdateChecker.checkForUpdates(this);
+        // Загрузка конфигурации
+        saveDefaultConfig();
+        reloadConfig(); // Убедимся, что конфигурация загружена
+
+        // Инициализация WeaponManager
+        List<String> rarityList = getMineConfig().getStringList("rarity_list");
+        HashMap<String, Double> damageModifiers = new HashMap<>();
+        Map<String, Object> damageModConfig = Objects.requireNonNull(getMineConfig().getConfigurationSection("damage_mod")).getValues(false);
+        for (Map.Entry<String, Object> entry : damageModConfig.entrySet()) {
+            String rarity = entry.getKey();
+            double modifier = Double.parseDouble(entry.getValue().toString());
+            damageModifiers.put(rarity, modifier);
         }
 
-        // Удаляем все ArmorStand с именем аирдропа при запуске плагина
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity instanceof ArmorStand) {
-                    ArmorStand armorStand = (ArmorStand) entity;
-                    if (armorStand.getCustomName() != null && armorStand.getCustomName().equals(ChatColor.RED + "Воздушное Снабжение")) {
-                        armorStand.remove(); // Удаляем ArmorStand
-                    }
-                }
-            }
-        }
+        weaponManager = new WeaponManager(rarityList, damageModifiers);
 
-        List<String> rarityList;
-        HashMap<String, Double> damageModifiers;
-        {
-            // Initialize the weaponManager in a static block
-            rarityList = getMineConfig().getStringList("rarity_list");
-            damageModifiers = new HashMap<>();
+        // Инициализация абилок (автоматически через статический блок в AbilityInitializer)
+        AbilityInitializer.initializeWeaponAbilities(weaponManager);
+        AbilityInitializer.initializeToolAbilities();
 
-            // Retrieve damage modifiers from the configuration
-            Map<String, Object> damageModConfig = Objects.requireNonNull(getMineConfig().getConfigurationSection("damage_mod")).getValues(false);
-            for (Map.Entry<String, Object> entry : damageModConfig.entrySet()) {
-                String rarity = entry.getKey();
-                double modifier = Double.parseDouble(entry.getValue().toString());
-                damageModifiers.put(rarity, modifier);
-            }
-        }
-
-        weaponManager = new WeaponManager(rarityList, damageModifiers); // Pass the initialized HashMap
-        getServer().getPluginManager().registerEvents(new LootListener(), this);
-
-        // Регистрируем слушатели
+        // Регистрация команд и слушателей
         getServer().getPluginManager().registerEvents(this, this);
-
-        logger.info("GribMine Plugin initialized ;)");
-        logger.info("Версия плагина: " + getDescription().getVersion());
-        //logger.info("Версия плагина:");
-
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
+        Objects.requireNonNull(getCommand("gribmine")).setExecutor(this);
+
+        getLogger().info("GribMine Plugin initialized ;)");
     }
 
     public static GribMine getInstance() {
@@ -320,8 +301,14 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     abilities.get("desiccation").setChance(config.getDouble("ability_chance.desiccation"));
                     abilities.get("freeze").setChance(config.getDouble("ability_chance.freeze"));
                     abilities.get("bloodlust").setChance(config.getDouble("ability_chance.bloodlust"));
-
+                    abilities.get("bladeVortex").setChance(config.getDouble("ability_chance.bladeVortex"));
+                    abilities.get("sirenSong").setChance(config.getDouble("ability_chance.sirenSong"));
+                    abilities.get("sacrifice").setChance(config.getDouble("ability_chance.sacrifice"));
+                    abilities.get("shadowCloak").setChance(config.getDouble("ability_chance.shadowCloak"));
+                    abilities.get("flamingDance").setChance(config.getDouble("ability_chance.flamingDance"));
+                    abilities.get("suffocation").setChance(config.getDouble("ability_chance.suffocation"));
                     break;
+
                 case "check_update":
                     // Вызываем проверку обновлений
                     UpdateChecker.checkForUpdates(this);
@@ -342,6 +329,16 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                     new handleWeaponCommand(sender, args);
                     break;
+
+                case "tool":
+                    // Логика для tool
+                    if (args.length < 2) {
+                        sender.sendMessage("Используйте: /gribadmin tool <set|get|reset|reassemble>");
+                        return true;
+                    }
+                    new ToolCommand().onCommand(sender, command, label, Arrays.copyOfRange(args, 1, args.length));
+                    break;
+
                 case "airdrop":
                     if (args.length < 2) {
                         sender.sendMessage("Используйте /gribadmin airdrop <summon>");
@@ -354,11 +351,35 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     break;
             }
             return true;
+        } else if (command.getName().equalsIgnoreCase("gribmine")) {
+            if (args.length == 0) {
+                sender.sendMessage("use /gribmine <version|about>");
+                return true;
+            }
+            switch (args[0].toLowerCase()) {
+
+                case "version":
+                    sender.sendMessage("Version of plugin: "+ChatColor.GREEN+getDescription().getVersion());
+                    break;
+
+                case "about":
+                    sender.sendMessage(ChatColor.GREEN +"GribMine"+ChatColor.RESET+"Plugin");
+                    sender.sendMessage("By: SashegDev");
+                    sender.sendMessage("TG: @GDsasheg | DS: sasheg");
+                    sender.sendMessage("");
+                    sender.sendMessage(ChatColor.DARK_PURPLE+"Этот плагин был разработан специально для сервера GribMine");
+                    sender.sendMessage(ChatColor.DARK_RED+"Использование плагина или использование его в коммерчиских целях без разрешения SashegDev(кроме проекта GribMine, ему можно) - запрещено");
+                    break;
+
+                default:
+                    sender.sendMessage("Неизвестная подкоманда");
+                    break;
+            }
         }
         return false;
     }
 
-    //подсказки епта, не знаю заработает ли с /gribadmin weapon set
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
@@ -370,6 +391,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("check_update");
                 completions.add("get_config");
                 completions.add("weapon");
+                completions.add("tool");
                 completions.add("airdrop");
             } else if (args.length == 2 && args[0].equalsIgnoreCase("weapon")) {
                 // Подсказки для второго аргумента
@@ -407,6 +429,15 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             } else if (args.length == 4 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
                 // Подсказка для числа (количество аирдропов)
                 completions.add("[<count>]"); // Подсказка для ввода числа
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("tool")) {
+                // Подсказки для второго аргумента команды tool
+                completions.add("set");
+                completions.add("get");
+                completions.add("reset");
+                completions.add("reassemble");
+            } else if (args.length == 3 && args[0].equalsIgnoreCase("tool") && args[1].equalsIgnoreCase("set")) {
+                // Подсказки для третьего аргумента команды tool set
+                completions.addAll(ToolAbilityManager.getAbilityNames());
             }
         }
 
@@ -418,7 +449,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
         return completions;
     }
-
     public static FileConfiguration getMineConfig() {
         return config;
     }
