@@ -22,14 +22,14 @@ public class UpdateChecker {
 
     public static void checkForUpdates(GribMine plugin) {
         if (!plugin.getConfig().getBoolean("check-for-updates", true)) {
-            plugin.getLogger().info("Автопроверка обновлений отключена.");
+            DebugLogger.log("Автопроверка обновлений отключена.", DebugLogger.LogLevel.INFO);
             return;
         }
 
         String versionType = plugin.getConfig().getString("version-type", "release").toLowerCase();
         String currentVersion = plugin.getDescription().getVersion();
-        plugin.getLogger().info("Текущая версия: " + currentVersion);
-        plugin.getLogger().info("Тип версии для проверки: " + versionType);
+        DebugLogger.log("Текущая версия: " + currentVersion, DebugLogger.LogLevel.INFO);
+        DebugLogger.log("Тип версии для проверки: " + versionType, DebugLogger.LogLevel.INFO);
 
         try {
             URL url = new URL(GITHUB_RELEASES_URL);
@@ -46,7 +46,7 @@ public class UpdateChecker {
                     String tagName = release.get("tag_name").getAsString();
                     boolean isPrerelease = release.get("prerelease").getAsBoolean();
 
-                    plugin.getLogger().info("Найдена версия: " + tagName + " (prerelease: " + isPrerelease + ")");
+                    DebugLogger.log("Найдена версия: " + tagName + " (prerelease: " + isPrerelease + ")", DebugLogger.LogLevel.INFO);
 
                     // Проверяем тип версии
                     boolean isVersionMatch = false;
@@ -61,18 +61,18 @@ public class UpdateChecker {
 
                     // Если версия подходит, проверяем, является ли она новой
                     if (isVersionMatch && isNewerVersion(tagName, currentVersion)) {
-                        plugin.getLogger().info("Найдена новая версия: " + tagName);
+                        DebugLogger.log("Найдена новая версия: " + tagName, DebugLogger.LogLevel.INFO);
                         downloadNewVersion(release, plugin);
                         break;
                     } else {
-                        plugin.getLogger().info("Версия " + tagName + " не является новой или не подходит по типу.");
+                        DebugLogger.log("Версия " + tagName + " не является новой или не подходит по типу.", DebugLogger.LogLevel.INFO);
                     }
                 }
             } else {
-                plugin.getLogger().warning("Не удалось проверить обновления. Код ответа: " + connection.getResponseCode());
+                DebugLogger.log("Не удалось проверить обновления. Код ответа: " + connection.getResponseCode(), DebugLogger.LogLevel.WARNING);
             }
         } catch (IOException e) {
-            plugin.getLogger().warning("Ошибка при проверке обновлений: " + e.getMessage());
+            DebugLogger.log("Ошибка при проверке обновлений: " + e.getMessage(), DebugLogger.LogLevel.ERROR);
         }
     }
 
@@ -81,8 +81,8 @@ public class UpdateChecker {
         newVersion = newVersion.replaceAll("[^0-9.]", ""); // Удаляем все нечисловые символы, кроме точек
         currentVersion = currentVersion.replaceAll("[^0-9.]", ""); // Удаляем все нечисловые символы, кроме точек
 
-        System.out.println("Очищенная новая версия: " + newVersion);
-        System.out.println("Очищенная текущая версия: " + currentVersion);
+        DebugLogger.log("Очищенная новая версия: " + newVersion, DebugLogger.LogLevel.INFO);
+        DebugLogger.log("Очищенная текущая версия: " + currentVersion, DebugLogger.LogLevel.INFO);
 
         // Разбиваем версии на части
         String[] newParts = newVersion.split("\\.");
@@ -109,11 +109,18 @@ public class UpdateChecker {
             String tagName = release.get("tag_name").getAsString(); // Получаем версию из тега
             String expectedFileName = "gribmineplugin-" + tagName + ".jar"; // Формируем имя файла
 
-            // Удаляем старую версию плагина, если она существует
-            File oldPluginFile = new File(plugin.getDataFolder().getParent(), "gribmineplugin-1.3.jar");
-            if (oldPluginFile.exists()) {
-                oldPluginFile.delete();
-                plugin.getLogger().info("Старая версия плагина удалена.");
+            // Удаляем все старые версии плагина
+            File pluginsFolder = plugin.getDataFolder().getParentFile();
+            File[] pluginFiles = pluginsFolder.listFiles((dir, name) -> name.startsWith("gribmineplugin-") && name.endsWith(".jar"));
+
+            if (pluginFiles != null) {
+                for (File oldPluginFile : pluginFiles) {
+                    if (oldPluginFile.delete()) {
+                        DebugLogger.log("Старая версия плагина удалена: " + oldPluginFile.getName(), DebugLogger.LogLevel.INFO);
+                    } else {
+                        DebugLogger.log("Не удалось удалить старую версию плагина: " + oldPluginFile.getName(), DebugLogger.LogLevel.WARNING);
+                    }
+                }
             }
 
             for (JsonElement assetElement : assets) {
@@ -123,22 +130,22 @@ public class UpdateChecker {
                 // Проверяем, соответствует ли имя файла ожидаемому
                 if (assetName.equalsIgnoreCase(expectedFileName)) {
                     String downloadUrl = asset.get("browser_download_url").getAsString();
-                    File pluginFile = new File(plugin.getDataFolder().getParent(), expectedFileName);
+                    File pluginFile = new File(pluginsFolder, expectedFileName);
 
                     // Скачиваем новую версию
                     URL url = new URL(downloadUrl);
                     Files.copy(url.openStream(), pluginFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                    plugin.getLogger().info("Новая версия успешно загружена: " + expectedFileName);
-                    plugin.getLogger().info("Перезагрузите сервер для применения изменений.");
+                    DebugLogger.log("Новая версия успешно загружена: " + expectedFileName, DebugLogger.LogLevel.INFO);
+                    DebugLogger.log("Перезагрузите сервер для применения изменений.", DebugLogger.LogLevel.INFO);
                     return; // Выходим из метода после успешной загрузки
                 }
             }
 
             // Если файл не найден
-            plugin.getLogger().warning("Файл " + expectedFileName + " не найден в ассетах.");
+            DebugLogger.log("Файл " + expectedFileName + " не найден в ассетах.", DebugLogger.LogLevel.WARNING);
         } catch (IOException e) {
-            plugin.getLogger().warning("Ошибка при загрузке новой версии: " + e.getMessage());
+            DebugLogger.log("Ошибка при загрузке новой версии: " + e.getMessage(), DebugLogger.LogLevel.ERROR);
         }
     }
 }
