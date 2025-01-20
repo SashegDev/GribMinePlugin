@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.sashegdev.gribMine.GribMine;
+import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,6 +63,7 @@ public class UpdateChecker {
                     if (isVersionMatch && isNewerVersion(tagName, currentVersion)) {
                         DebugLogger.log("Найдена новая версия: " + tagName, DebugLogger.LogLevel.INFO);
                         downloadNewVersion(release, plugin);
+                        Bukkit.reload();
                         break;
                     } else {
                         DebugLogger.log("Версия " + tagName + " не является новой или не подходит по типу.", DebugLogger.LogLevel.INFO);

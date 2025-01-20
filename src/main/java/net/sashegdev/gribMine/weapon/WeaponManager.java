@@ -151,7 +151,7 @@ public class WeaponManager implements Listener {
                 }
 
                 long endTime = System.currentTimeMillis();
-                DebugLogger.log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
+                //DebugLogger.log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
             }
         }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 10); // 10 тиков
     }

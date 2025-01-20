@@ -3,7 +3,7 @@
 
     <groupId>net.sashegdev</groupId>
     <artifactId>gribmineplugin</artifactId>
-    <version>beta-1.3.4.2.1</version>
+    <version>beta-1.3.4.3</version>
     <packaging>jar</packaging>
 
     <name>gribmineplugin</name>

