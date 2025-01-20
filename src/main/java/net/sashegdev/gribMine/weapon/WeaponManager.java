@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.weapon;
 
 import net.md_5.bungee.api.ChatColor;
+import net.sashegdev.gribMine.DebugLogger;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.ability.*;
 import org.bukkit.Bukkit;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.swing.*;
 import java.util.*;
 
 public class WeaponManager implements Listener {
@@ -91,29 +93,32 @@ public class WeaponManager implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
+                long startTime = System.currentTimeMillis();
+
                 for (Player player : Bukkit.getOnlinePlayers()) {
+                    UUID playerId = player.getUniqueId();
                     ItemStack item = player.getInventory().getItemInMainHand();
-                    if (item == null || item.getType().isAir()) continue; // Пропускаем, если в руке ничего нет
+                    if (item == null || item.getType().isAir()) continue;
 
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta == null) continue;
 
-                    // Получаем текущую редкость
                     String rarity = getRarityFromLore(itemMeta.getLore());
                     if (rarity == null || !rarityList.contains(rarity)) {
-                        rarity = rarityList.get(0); // Минимальная редкость
+                        rarity = rarityList.get(0);
                     }
 
-                    // Проверяем, нужно ли обновить предмет
-                    UUID playerId = player.getUniqueId();
-                    String lastRarity = lastRarityCache.get(playerId);
+                    double damageModifier = getDamageModifier(rarity);
 
-                    // Если редкость изменилась или предмет не имеет лора
-                    if (!rarity.equals(lastRarity) || !itemMeta.hasLore()) {
+                    String lastRarity = lastRarityCache.get(playerId);
+                    Double lastDamageModifier = lastDamageModifierCache.get(playerId);
+
+                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier)) {
                         // Обновляем кэш
                         lastRarityCache.put(playerId, rarity);
+                        lastDamageModifierCache.put(playerId, damageModifier);
 
-                        // Обновляем название и лор
+                        // Обновляем лор и название
                         String displayName = itemMeta.getDisplayName();
                         if (displayName == null || displayName.isEmpty()) {
                             displayName = item.getType().toString().toLowerCase().replace("_", " ");
@@ -121,14 +126,18 @@ public class WeaponManager implements Listener {
                         }
                         ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
                         itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
-                        itemMeta.setLore(createLoreWithRarity(rarity, "none")); // Упрощено, без проверки способностей
+                        itemMeta.setLore(createLoreWithRarity(rarity, "none"));
 
                         // Применяем изменения к предмету
                         item.setItemMeta(itemMeta);
                     }
                 }
+
+                long endTime = System.currentTimeMillis();
+                DebugLogger
+                        .log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 1); // Оставляем проверку каждый тик
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 10); // 10 тиков
     }
 
     private static String getRarityFromLore(List<String> lore) {
