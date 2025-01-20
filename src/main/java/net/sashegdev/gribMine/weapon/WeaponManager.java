@@ -100,12 +100,28 @@ public class WeaponManager implements Listener {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     if (item == null || item.getType().isAir()) continue;
 
+                    // Проверяем, разрешён ли тип предмета
+                    String weaponType = item.getType().name().toLowerCase();
+                    if (!allowedWeaponTypes.contains(weaponType)) {
+                        continue; // Пропускаем предмет, если его тип не разрешён
+                    }
+
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta == null) continue;
 
+                    // Проверяем, есть ли у предмета уже лор и цветное имя
+                    boolean hasLore = itemMeta.hasLore();
+                    boolean hasDisplayName = itemMeta.hasDisplayName() && !itemMeta.getDisplayName().isEmpty();
+
+                    // Если у предмета уже есть лор и цветное имя, пропускаем его
+                    if (hasLore && hasDisplayName) {
+                        continue;
+                    }
+
+                    // Получаем текущую редкость
                     String rarity = getRarityFromLore(itemMeta.getLore());
                     if (rarity == null || !rarityList.contains(rarity)) {
-                        rarity = rarityList.get(0);
+                        rarity = rarityList.get(0); // Минимальная редкость
                     }
 
                     double damageModifier = getDamageModifier(rarity);
@@ -113,12 +129,13 @@ public class WeaponManager implements Listener {
                     String lastRarity = lastRarityCache.get(playerId);
                     Double lastDamageModifier = lastDamageModifierCache.get(playerId);
 
-                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier)) {
+                    // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
+                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !hasLore || !hasDisplayName) {
                         // Обновляем кэш
                         lastRarityCache.put(playerId, rarity);
                         lastDamageModifierCache.put(playerId, damageModifier);
 
-                        // Обновляем лор и название
+                        // Обновляем название и лор
                         String displayName = itemMeta.getDisplayName();
                         if (displayName == null || displayName.isEmpty()) {
                             displayName = item.getType().toString().toLowerCase().replace("_", " ");
@@ -134,8 +151,7 @@ public class WeaponManager implements Listener {
                 }
 
                 long endTime = System.currentTimeMillis();
-                DebugLogger
-                        .log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
+                DebugLogger.log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
             }
         }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 10); // 10 тиков
     }
