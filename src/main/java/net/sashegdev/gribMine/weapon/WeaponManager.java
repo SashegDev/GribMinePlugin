@@ -104,25 +104,14 @@ public class WeaponManager implements Listener {
                         rarity = rarityList.get(0); // Минимальная редкость
                     }
 
-                    // Получаем текущую способность
-                    String passiveAbility = getPassiveAbilityFromLore(itemMeta.getLore());
-                    if (passiveAbility == null) {
-                        passiveAbility = "none"; // Если способность не найдена
-                    }
-
-                    // Получаем текущий модификатор урона
-                    double damageModifier = getDamageModifier(rarity);
-
                     // Проверяем, нужно ли обновить предмет
                     UUID playerId = player.getUniqueId();
                     String lastRarity = lastRarityCache.get(playerId);
-                    Double lastDamageModifier = lastDamageModifierCache.get(playerId);
 
-                    // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
-                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !itemMeta.hasLore() || !itemMeta.hasAttributeModifiers()) {
+                    // Если редкость изменилась или предмет не имеет лора
+                    if (!rarity.equals(lastRarity) || !itemMeta.hasLore()) {
                         // Обновляем кэш
                         lastRarityCache.put(playerId, rarity);
-                        lastDamageModifierCache.put(playerId, damageModifier);
 
                         // Обновляем название и лор
                         String displayName = itemMeta.getDisplayName();
@@ -132,46 +121,14 @@ public class WeaponManager implements Listener {
                         }
                         ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
                         itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
-                        itemMeta.setLore(createLoreWithRarity(rarity, passiveAbility));
-
-                        // Обновляем модификатор урона
-                        if (itemMeta.hasAttributeModifiers()) {
-                            itemMeta.removeAttributeModifier(Attribute.ATTACK_DAMAGE);
-                        }
-                        if (damageModifier > 1) {
-                            itemMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier("generic.attack_damage", damageModifier, AttributeModifier.Operation.ADD_SCALAR));
-                        }
+                        itemMeta.setLore(createLoreWithRarity(rarity, "none")); // Упрощено, без проверки способностей
 
                         // Применяем изменения к предмету
-                        String weaponType = item.getType().name().toLowerCase(); // Получаем тип оружия в нижнем регистре
-                        if (allowedWeaponTypes.contains(weaponType)) { // Проверяем, разрешен ли этот тип оружия
-                            item.setItemMeta(itemMeta);
-                        }
-
-                        // Обработка рарности
-                        if (rarityList.contains(rarity)) {
-                            // Проверяем, поднимал ли игрок эту рарность ранее
-                            if (!playerRarityMap.containsKey(player.getUniqueId())) {
-                                playerRarityMap.put(player.getUniqueId(), new ArrayList<>());
-                            }
-
-                            List<String> playerRarities = playerRarityMap.get(player.getUniqueId());
-                            if (!playerRarities.contains(rarity) && allowedWeaponTypes.contains(weaponType)) {
-                                // Если игрок поднимает рарность в первый раз, создаем частицы
-                                Location loc = player.getLocation();
-                                for (int i = 0; i < 30; i++) { // Количество частиц
-                                    double angle = Math.random() * 2 * Math.PI; // Случайный угол
-                                    double x = Math.cos(angle) * 0.5; // Смещение по X
-                                    double z = Math.sin(angle) * 0.5; // Смещение по Z
-                                    player.getWorld().spawnParticle(Particle.END_ROD, loc.getX() + x, loc.getY() + 1, loc.getZ() + z, 1, 0, 0, 0, 0.13);
-                                }
-                                playerRarities.add(rarity); // Добавляем рарность в список
-                            }
-                        }
+                        item.setItemMeta(itemMeta);
                     }
                 }
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 1);
+        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 1); // Оставляем проверку каждый тик
     }
 
     private static String getRarityFromLore(List<String> lore) {

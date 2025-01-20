@@ -24,6 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -354,8 +355,50 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     break;
             }
             return true;
+        } else {sender.sendMessage(ChatColor.RED+"[GRIBMINE] Nonono mister fish");}
+        if (command.getName().equalsIgnoreCase("gribmine")) {
+            if (args.length==0) {
+                sender.sendMessage("use /gribmine <tps|about|version>");
+            }
+            switch (args[0].toLowerCase()) {
+                case "tps":
+                    // Получаем TPS
+                    double tps = Bukkit.getServerTickManager().getTickRate();
+
+                    // Форматируем вывод
+                    DecimalFormat df = new DecimalFormat("0.00");
+                    String tpsColor = getColorForTps(tps);
+
+                    sender.sendMessage(ChatColor.GOLD + "Текущий TPS: " + tpsColor + df.format(tps));
+                    return true;
+
+                case "about":
+                    sender.sendMessage(ChatColor.GREEN + "Grib"+ ChatColor.DARK_GREEN+"Mine");
+                    sender.sendMessage(ChatColor.GOLD + "Разработчик: SashegDev");
+                    //sender.sendMessage(ChatColor.GOLD + "Версия: " +ChatColor.DARK_GREEN+ getDescription().getVersion());
+                    return true;
+
+                case "version":
+                    sender.sendMessage(ChatColor.GOLD + "Версия плагина: " +ChatColor.GREEN+ getDescription().getVersion());
+                    return true;
+
+                default:
+                    sender.sendMessage(ChatColor.RED + "Неизвестная подкоманда. Используйте /gribmine <tps|about|version>");
+                    return true;
+            }
         }
         return false;
+    }
+
+    // Метод для определения цвета TPS
+    private String getColorForTps(double tps) {
+        if (tps >= 18.0) {
+            return ChatColor.GREEN.toString();
+        } else if (tps >= 15.0) {
+            return ChatColor.YELLOW.toString();
+        } else {
+            return ChatColor.RED.toString();
+        }
     }
 
     //подсказки епта, не знаю заработает ли с /gribadmin weapon set
@@ -407,6 +450,20 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             } else if (args.length == 4 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
                 // Подсказка для числа (количество аирдропов)
                 completions.add("[<count>]"); // Подсказка для ввода числа
+            }
+        }
+        if (command.getName().equalsIgnoreCase("gribmine")) {
+            if (args.length == 1) {
+                // Подсказки для первого аргумента
+                completions.add("tps");
+                completions.add("about");
+                completions.add("version");
+            }
+
+            // Фильтруем подсказки по уже введенному тексту
+            if (args.length > 0) {
+                String lastArg = args[args.length - 1].toLowerCase();
+                completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
             }
         }
 

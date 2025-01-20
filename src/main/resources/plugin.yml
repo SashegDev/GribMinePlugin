@@ -1,5 +1,5 @@
 name: GribMine
-version: beta-1.3.4
+version: beta-1.3.4.1
 main: net.sashegdev.gribMine.GribMine
 api-version: '1.21'
 prefix: GribMinePlugin
@@ -10,6 +10,9 @@ website: https://github.com/SashegDev/GribMinePlugin
 commands:
   gribadmin:
     description: Команда для администрирования плагина GribMine
-    usage: /<command> <reload|get_config|weapon>
+    usage: /<command> <reload|check_update|get_config|weapon|airdrop>"
     permission: op
     permission-message: Nonono mister fish!
+  gribmine:
+    description: Команда для обычный игроков
+    usage: /<command> <tps|about|version>
