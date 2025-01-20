@@ -355,21 +355,24 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     break;
             }
             return true;
-        } else {sender.sendMessage(ChatColor.RED+"[GRIBMINE] Nonono mister fish");}
-        if (command.getName().equalsIgnoreCase("gribmine")) {
+        }
+        else if (command.getName().equalsIgnoreCase("gribmine")) {
             if (args.length==0) {
                 sender.sendMessage("use /gribmine <tps|about|version>");
             }
             switch (args[0].toLowerCase()) {
                 case "tps":
-                    // Получаем TPS
-                    double tps = Bukkit.getServerTickManager().getTickRate();
+                    try {
+                        double currentTps = TPSUtil.getTPS();
 
-                    // Форматируем вывод
-                    DecimalFormat df = new DecimalFormat("0.00");
-                    String tpsColor = getColorForTps(tps);
+                        // Форматируем вывод
+                        DecimalFormat df = new DecimalFormat("0.00");
+                        String tpsColor = getColorForTps(currentTps);
 
-                    sender.sendMessage(ChatColor.GOLD + "Текущий TPS: " + tpsColor + df.format(tps));
+                        sender.sendMessage(ChatColor.GOLD + "Текущий TPS: " + tpsColor + df.format(currentTps));
+                    } catch (IllegalStateException e) {
+                        sender.sendMessage(ChatColor.RED + "Ошибка: " + e.getMessage());
+                    }
                     return true;
 
                 case "about":
