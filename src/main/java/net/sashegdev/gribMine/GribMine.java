@@ -82,6 +82,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
         weaponManager = new WeaponManager(rarityList, damageModifiers); // Pass the initialized HashMap
         getServer().getPluginManager().registerEvents(new LootListener(), this);
+        getServer().getPluginManager().registerEvents(weaponManager,this);
 
         // Регистрируем слушатели
         getServer().getPluginManager().registerEvents(this, this);

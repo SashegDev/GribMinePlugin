@@ -10,7 +10,11 @@ import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -65,14 +69,6 @@ public class WeaponManager implements Listener {
         addAbility(new ShadowCloak().getName(), "uncommon", new ShadowCloak());
         addAbility(new FlamingDance().getName(), "common", new FlamingDance());
         addAbility(new Suffocation().getName(), "rare", new Suffocation());
-
-        // Запускаем ChangeWeapon каждый тик
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                ChangeWeapon();
-            }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0L, 1L); // 0L - начальная задержка, 1L - период (1 тик)
     }
 
     // Метод для добавления способностей к оружию
@@ -89,71 +85,86 @@ public class WeaponManager implements Listener {
     private static final HashMap<UUID, String> lastRarityCache = new HashMap<>();
     private static final HashMap<UUID, Double> lastDamageModifierCache = new HashMap<>();
 
-    public static void ChangeWeapon() {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                long startTime = System.currentTimeMillis();
+    public static void changeWeaponForPlayer(Player player) {
+        UUID playerId = player.getUniqueId();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item == null || item.getType().isAir()) return;
 
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    UUID playerId = player.getUniqueId();
-                    ItemStack item = player.getInventory().getItemInMainHand();
-                    if (item == null || item.getType().isAir()) continue;
+        // Проверяем, разрешён ли тип предмета
+        String weaponType = item.getType().name().toLowerCase();
+        if (!allowedWeaponTypes.contains(weaponType)) {
+            return; // Пропускаем предмет, если его тип не разрешён
+        }
 
-                    // Проверяем, разрешён ли тип предмета
-                    String weaponType = item.getType().name().toLowerCase();
-                    if (!allowedWeaponTypes.contains(weaponType)) {
-                        continue; // Пропускаем предмет, если его тип не разрешён
-                    }
+        ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta == null) return;
 
-                    ItemMeta itemMeta = item.getItemMeta();
-                    if (itemMeta == null) continue;
+        // Проверяем, есть ли у предмета уже лор и цветное имя
+        boolean hasLore = itemMeta.hasLore();
+        boolean hasDisplayName = itemMeta.hasDisplayName() && !itemMeta.getDisplayName().isEmpty();
 
-                    // Проверяем, есть ли у предмета уже лор и цветное имя
-                    boolean hasLore = itemMeta.hasLore();
-                    boolean hasDisplayName = itemMeta.hasDisplayName() && !itemMeta.getDisplayName().isEmpty();
+        // Если у предмета уже есть лор и цветное имя, пропускаем его
+        if (hasLore && hasDisplayName) {
+            return;
+        }
 
-                    // Если у предмета уже есть лор и цветное имя, пропускаем его
-                    if (hasLore && hasDisplayName) {
-                        continue;
-                    }
+        // Получаем текущую редкость
+        String rarity = getRarityFromLore(itemMeta.getLore());
+        if (rarity == null || !rarityList.contains(rarity)) {
+            rarity = rarityList.get(0); // Минимальная редкость
+        }
 
-                    // Получаем текущую редкость
-                    String rarity = getRarityFromLore(itemMeta.getLore());
-                    if (rarity == null || !rarityList.contains(rarity)) {
-                        rarity = rarityList.get(0); // Минимальная редкость
-                    }
+        double damageModifier = getDamageModifier(rarity);
 
-                    double damageModifier = getDamageModifier(rarity);
+        String lastRarity = lastRarityCache.get(playerId);
+        Double lastDamageModifier = lastDamageModifierCache.get(playerId);
 
-                    String lastRarity = lastRarityCache.get(playerId);
-                    Double lastDamageModifier = lastDamageModifierCache.get(playerId);
+        // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
+        if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !hasLore || !hasDisplayName) {
+            // Обновляем кэш
+            lastRarityCache.put(playerId, rarity);
+            lastDamageModifierCache.put(playerId, damageModifier);
 
-                    // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
-                    if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !hasLore || !hasDisplayName) {
-                        // Обновляем кэш
-                        lastRarityCache.put(playerId, rarity);
-                        lastDamageModifierCache.put(playerId, damageModifier);
-
-                        // Обновляем название и лор
-                        String displayName = itemMeta.getDisplayName();
-                        if (displayName == null || displayName.isEmpty()) {
-                            displayName = item.getType().toString().toLowerCase().replace("_", " ");
-                            displayName = capitalize(displayName.trim());
-                        }
-                        ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
-                        itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
-                        itemMeta.setLore(createLoreWithRarity(rarity, "none"));
-
-                        // Применяем изменения к предмету
-                        item.setItemMeta(itemMeta);
-                    }
-                }
-
-                long endTime = System.currentTimeMillis();
-                //DebugLogger.log("ChangeWeapon выполнен за " + (endTime - startTime) + " мс", DebugLogger.LogLevel.INFO);
+            // Обновляем название и лор
+            String displayName = itemMeta.getDisplayName();
+            if (displayName == null || displayName.isEmpty()) {
+                displayName = item.getType().toString().toLowerCase().replace("_", " ");
+                displayName = capitalize(displayName.trim());
             }
-        }.runTaskTimer(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("GribMine")), 0, 10); // 10 тиков
+            ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
+            itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
+            itemMeta.setLore(createLoreWithRarity(rarity, "none"));
+
+            // Применяем изменения к предмету
+            item.setItemMeta(itemMeta);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem().getItemStack();
+        if (item != null && !item.getType().isAir()) {
+            WeaponManager.changeWeaponForPlayer(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItem(event.getNewSlot());
+        if (item != null && !item.getType().isAir()) {
+            WeaponManager.changeWeaponForPlayer(player);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item != null && !item.getType().isAir()) {
+            WeaponManager.changeWeaponForPlayer(player);
+        }
     }
 
     private static String getRarityFromLore(List<String> lore) {
