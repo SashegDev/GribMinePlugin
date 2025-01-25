@@ -1,12 +1,16 @@
 package net.sashegdev.gribMine.airdrop;
 
 import net.sashegdev.gribMine.DebugLogger;
+import net.sashegdev.gribMine.core.LegendaryManager;
+import net.sashegdev.gribMine.core.LegendaryRegistry;
+import net.sashegdev.gribMine.core.LegendaryItem;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
+import org.bukkit.block.Container;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -78,6 +82,19 @@ public class airdropLoot {
                     DebugLogger.log("Failed to select a random item.", DebugLogger.LogLevel.ERROR);
                 }
             }
+
+            Container container = (Container) block.getState();
+
+            LegendaryRegistry.getAll().stream()
+                    .filter(LegendaryItem::isEnabled)
+                    .forEach(item -> {
+                        if (Math.random() < item.getSpawnChance()
+                                && LegendaryManager.canSpawn(item)) {
+
+                            container.getInventory().addItem(item.createItem());
+                            LegendaryManager.markAsSpawned(item);
+                        }
+                    });
 
             // Debug: Print barrel inventory contents
             DebugLogger.log("Barrel inventory contents:", DebugLogger.LogLevel.INFO);
