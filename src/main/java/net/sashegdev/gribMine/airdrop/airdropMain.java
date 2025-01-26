@@ -26,7 +26,6 @@ public class airdropMain implements Listener {
     private final Location location;
     private static final List<airdropMain> airdropList = new ArrayList<>();
     private LivingEntity armor;
-    private boolean gravityEnabled = false; // Флаг для включения гравитации
 
     public airdropMain(@NotNull Player p) {
         this(p, 350, 350);
@@ -86,7 +85,9 @@ public class airdropMain implements Listener {
                     // Цикл для спавна частиц от startY до startY + 18 с шагом 0.2
                     for (double y = startY; y <= startY + 24; y += 0.2) {
                         Location particleLocation = new Location(playerLocation.getWorld(), playerLocation.getX(), y, playerLocation.getZ());
-                        Objects.requireNonNull(playerLocation.getWorld()).spawnParticle(Particle.WITCH, particleLocation, 1, 0.2, 0, 0.2, 0.001);
+                        for (Player player : Bukkit.getOnlinePlayers()) {
+                            player.spawnParticle(Particle.WITCH, particleLocation, 1, 0.2, 0, 0.2, 0.001, null, true);
+                        }
                     }
                     ticks++;
                 } else {
@@ -102,8 +103,8 @@ public class airdropMain implements Listener {
 
         new BukkitRunnable() {
             boolean useVanillaFall = false; // Флаг для переключения на ванильное падение
-            int surfaceY = getSurfaceY(armor.getLocation()); // Высота поверхности (кэшируем)
-            int vanillaFallHeight = surfaceY + 5; // Высота, на которой включается ванильное падение (5 блоков выше поверхности)
+            final int surfaceY = getSurfaceY(armor.getLocation()); // Высота поверхности (кэшируем)
+            final int vanillaFallHeight = surfaceY + 5; // Высота, на которой включается ванильное падение (5 блоков выше поверхности)
 
             @Override
             public void run() {
@@ -196,7 +197,7 @@ public class airdropMain implements Listener {
         return location;
     }
 
-    public static List<airdropMain> getAirdropList() {
-        return airdropList;
-    }
+    //public static List<airdropMain> getAirdropList() {
+        //return airdropList;
+    //}
 }

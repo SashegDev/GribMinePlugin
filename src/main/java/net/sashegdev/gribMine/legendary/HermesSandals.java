@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
@@ -27,14 +28,18 @@ public class HermesSandals extends LegendaryItem {
 
     @Override
     public void onUse(Player player) {
-        player.setCooldown(Objects.requireNonNull(player.getItemInUse()).getType(), 30 * 60 * 20);
+        ItemStack sandals = player.getInventory().getBoots();
+        if (sandals == null || !sandals.isSimilar(getItemStack())) return;
 
-        // Активация творческого полёта
+        // Установка кулдауна на 2 минуты (синхронизировано с эффектом)
+        player.setCooldown(sandals.getType(), 20 * 60 * 2);
+
+        // Активация полёта
         player.setAllowFlight(true);
         player.setFlying(true);
-        player.setFlySpeed(0.2f); // Скорость полёта (можно настроить)
+        player.setFlySpeed(0.2f);
 
-        // Эффекты при активации
+        // Эффекты
         player.getWorld().spawnParticle(
                 Particle.CLOUD,
                 player.getLocation(),
@@ -43,7 +48,7 @@ public class HermesSandals extends LegendaryItem {
                 0.2
         );
 
-        // Деактивация полёта через 2 минуты
+        // Деактивация через 2 минуты
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -52,6 +57,6 @@ public class HermesSandals extends LegendaryItem {
                     player.setAllowFlight(false);
                 }
             }
-        }.runTaskLater(GribMine.getPlugin(GribMine.class), 30 * 60 * 2);
+        }.runTaskLater(GribMine.getPlugin(GribMine.class), 20 * 60 * 2);
     }
 }

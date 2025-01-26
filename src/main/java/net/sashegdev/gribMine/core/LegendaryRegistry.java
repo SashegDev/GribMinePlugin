@@ -4,9 +4,7 @@ import net.sashegdev.gribMine.legendary.HermesSandals;
 import net.sashegdev.gribMine.legendary.NyktaClock;
 import net.sashegdev.gribMine.legendary.ThorHammer;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class LegendaryRegistry {
     private static final Map<String, LegendaryItem> legendaries = new HashMap<>();
@@ -27,5 +25,10 @@ public class LegendaryRegistry {
 
     public static LegendaryItem getById(String id) {
         return legendaries.get(id);
+    }
+
+    // Получение списка всех ID
+    public static List<String> getAllIds() {
+        return new ArrayList<>(legendaries.keySet());
     }
 }

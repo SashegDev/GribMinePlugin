@@ -11,6 +11,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.ChatColor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class LegendaryItem {
     private final String id;
@@ -44,6 +45,28 @@ public abstract class LegendaryItem {
         meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, id);
 
         item.setItemMeta(meta);
+        return item;
+    }
+
+    // Метод для получения ItemStack предмета
+    public ItemStack getItemStack() {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            // Видимое название и лор
+            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+
+            List<String> visibleLore = lore.stream()
+                    .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                    .collect(Collectors.toList());
+
+            // Добавляем скрытый ID (невидимый для игрока)
+            String hiddenId = ChatColor.MAGIC + id;
+            visibleLore.add(hiddenId);
+
+            meta.setLore(visibleLore);
+            item.setItemMeta(meta);
+        }
         return item;
     }
 

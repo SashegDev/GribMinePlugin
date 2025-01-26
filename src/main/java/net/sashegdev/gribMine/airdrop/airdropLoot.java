@@ -7,6 +7,7 @@ import net.sashegdev.gribMine.core.LegendaryItem;
 import net.sashegdev.gribMine.weapon.WeaponManager;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.GribMine;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -65,19 +66,24 @@ public class airdropLoot {
                 }
             }
 
-            // Add random items
+            // Add coins
+            int totalCoins = generateRandomCoins();
+            addCoinsToBarrel(barrel, totalCoins);
+
+            // Add random items (non-coin items)
             for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations") + 1); rot > 0; rot--) {
                 String randomItem = getRandomItemWithChance();
                 if (randomItem != null) {
-                    Material material = Material.matchMaterial(randomItem);
-                    if (material != null) {
-                        int amount = getItemAmount(randomItem);
-                        ItemStack itemStack = new ItemStack(material, amount);
-                        barrel.getInventory().addItem(itemStack);
-                        DebugLogger.log("Added item: " + material + " x" + amount, DebugLogger.LogLevel.INFO);
-                    } else {
+                    Material material = Material.matchMaterial(randomItem); // Получаем материал из конфига
+                    if (material == null) {
                         DebugLogger.log("Invalid material: " + randomItem, DebugLogger.LogLevel.ERROR);
+                        continue; // Пропускаем этот предмет, если материал не найден
                     }
+                    int amount = getItemAmount(randomItem);
+                    ItemStack itemStack = new ItemStack(material, amount);
+
+                    barrel.getInventory().addItem(itemStack);
+                    DebugLogger.log("Added item: " + randomItem + " x" + amount, DebugLogger.LogLevel.INFO);
                 } else {
                     DebugLogger.log("Failed to select a random item.", DebugLogger.LogLevel.ERROR);
                 }
@@ -107,6 +113,7 @@ public class airdropLoot {
             DebugLogger.log("Block is not a barrel.", DebugLogger.LogLevel.ERROR);
         }
     }
+
 
     private static String getRandomItemWithChance() {
         double totalWeight = lootTable.values().stream()
@@ -182,5 +189,78 @@ public class airdropLoot {
             weapon.setItemMeta(meta);
         }
         return weapon;
+    }
+
+    private static int generateRandomCoins() {
+        int minCoins = GribMine.getMineConfig().getInt("MinCoinsInAirdrop", 5);
+        int maxCoins = GribMine.getMineConfig().getInt("MaxCoinsInAirdrop", 120);
+        return random.nextInt(maxCoins - minCoins + 1) + minCoins;
+    }
+
+    private static void addCoinsToBarrel(Barrel barrel, int totalCoins) {
+        int[] coinValues = {500, 100, 50, 20, 10, 5, 1}; // Номиналы монет от большего к меньшему
+        int remainingCoins = totalCoins;
+
+        for (int coinValue : coinValues) {
+            if (remainingCoins <= 0) break;
+
+            int count = remainingCoins / coinValue;
+            if (count > 0) {
+                ItemStack coinStack = createCoinItem(coinValue, count);
+                barrel.getInventory().addItem(coinStack);
+                remainingCoins -= count * coinValue;
+                DebugLogger.log("Added " + count + " x " + coinValue + " Coin", DebugLogger.LogLevel.INFO);
+            }
+        }
+    }
+
+    private static ItemStack createCoinItem(int coinValue, int count) {
+        Material material = Material.ECHO_SHARD; // Используем ECHO_SHARD как базовый материал
+        int customModelData;
+        String displayName;
+
+        // Определяем custom_model_data и имя в зависимости от номинала монеты
+        switch (coinValue) {
+            case 1:
+                customModelData = 6009;
+                displayName = ChatColor.ITALIC+"1 Coin";
+                break;
+            case 5:
+                customModelData = 6010;
+                displayName = ChatColor.ITALIC+"5 Coin";
+                break;
+            case 10:
+                customModelData = 6011;
+                displayName = ChatColor.ITALIC+"10 Coin";
+                break;
+            case 20:
+                customModelData = 6012;
+                displayName = ChatColor.ITALIC+"20 Coin";
+                break;
+            case 50:
+                customModelData = 6013;
+                displayName = ChatColor.ITALIC+"50 Coin";
+                break;
+            case 100:
+                customModelData = 6014;
+                displayName = ChatColor.ITALIC+"100 Coin";
+                break;
+            case 500:
+                customModelData = 6015;
+                displayName = ChatColor.ITALIC+"500 Coin";
+                break;
+            default:
+                // Если номинал не распознан, возвращаем обычный ECHO_SHARD
+                return new ItemStack(material, count);
+        }
+
+        ItemStack item = new ItemStack(material, count);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setCustomModelData(customModelData);
+            meta.setDisplayName(displayName);
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 }
