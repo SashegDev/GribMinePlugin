@@ -49,6 +49,18 @@ ability_chance:
   flamingDance: 0.6
   suffocation: 0.4
 
+# Инструменты, на которые разрешено накладывать абилки
+allowed_tool_types:
+  - DIAMOND_PICKAXE
+  - IRON_PICKAXE
+  - GOLDEN_PICKAXE
+  - DIAMOND_AXE
+  - IRON_AXE
+  - GOLDEN_AXE
+  - DIAMOND_SHOVEL
+  - IRON_SHOVEL
+  - GOLDEN_SHOVEL
+
 #Вещи, которые выпадают в дропе(этот лист для обычных предемтов, не рарных)
 #НА МОМЕНТ 1.0 - НЕ ПОДДЕРЖИВАЕТ МОДОВЫЕ ПРЕДМЕТЫ
 # 1 - 100% 0.1 - 10% 0.01 - 1%
