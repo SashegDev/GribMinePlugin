@@ -5,58 +5,62 @@ import org.bukkit.entity.Player;
 
 public class DebugLogger {
 
-    // Log levels
     public enum LogLevel {
         INFO,
         WARNING,
         ERROR
     }
 
-    // Log to console and chat (if enabled)
     public static void log(String message, LogLevel level) {
-        // Логи уровня ERROR и WARNING всегда выводятся в консоль
+        String className = getCallingClassName();
+        String formattedMessage = "[" + className + "] " + message;
+
+        // Логирование в консоль
         if (level == LogLevel.ERROR || level == LogLevel.WARNING) {
-            String formattedMessage = formatConsoleMessage(message, level);
-            GribMine.getInstance().getLogger().info(formattedMessage);
+            logToConsole(formattedMessage, level);
         } else if (GribMine.getMineConfig().getBoolean("debug_logs", true)) {
-            // Логи уровня INFO выводятся в консоль только если включены в конфиге
-            String formattedMessage = formatConsoleMessage(message, level);
-            GribMine.getInstance().getLogger().info(formattedMessage);
+            logToConsole(formattedMessage, level);
         }
 
-        // Логи в чат (если включены в конфиге)
+        // Логирование в чат
         if (GribMine.getMineConfig().getBoolean("chat_debug_logs", true)) {
-            String formattedChatMessage = formatChatMessage(message, level);
-            for (Player player : GribMine.getInstance().getServer().getOnlinePlayers()) {
-                if (player.isOp()) {
-                    player.sendMessage(formattedChatMessage);
-                }
+            logToChat(formattedMessage, level);
+        }
+    }
+
+    private static String getCallingClassName() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        if (stackTrace.length > 3) {
+            String fullClassName = stackTrace[3].getClassName();
+            return fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+        }
+        return "UnknownClass";
+    }
+
+    private static void logToConsole(String message, LogLevel level) {
+        GribMine.getInstance().getLogger().info(formatConsoleMessage(message, level));
+    }
+
+    private static void logToChat(String message, LogLevel level) {
+        String formatted = formatChatMessage(message, level);
+        for (Player player : GribMine.getInstance().getServer().getOnlinePlayers()) {
+            if (player.isOp()) {
+                player.sendMessage(formatted);
             }
         }
     }
 
-    // Format console message with log level
     private static String formatConsoleMessage(String message, LogLevel level) {
         return "[" + level.name() + "] " + message;
     }
 
-    // Format chat message with colors based on log level
     private static String formatChatMessage(String message, LogLevel level) {
-        ChatColor color;
-        switch (level) {
-            case INFO:
-                color = ChatColor.DARK_AQUA;
-                break;
-            case WARNING:
-                color = ChatColor.YELLOW;
-                break;
-            case ERROR:
-                color = ChatColor.RED;
-                break;
-            default:
-                color = ChatColor.WHITE;
-                break;
-        }
+        ChatColor color = switch (level) {
+            case INFO -> ChatColor.DARK_AQUA;
+            case WARNING -> ChatColor.YELLOW;
+            case ERROR -> ChatColor.RED;
+            default -> ChatColor.WHITE;
+        };
         return color + "[DEBUG] " + ChatColor.RESET + message;
     }
 }
