@@ -33,6 +33,7 @@ public class ToolCommand implements CommandExecutor {
         String subCommand = args[0].toLowerCase();
 
         switch (subCommand) {
+            /*
             case "set":
                 if (args.length < 2) {
                     sender.sendMessage(ChatColor.RED + "Используйте: /gribadmin tool set <ability>");
@@ -71,6 +72,10 @@ public class ToolCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.GREEN + "Способности инструмента пересобраны.");
                 break;
 
+             */
+            case "set", "get", "reset", "reassemble":
+                sender.sendMessage(ChatColor.RED + "%PLACEHOLDER%\n This is not finished yet.");
+                break;
             default:
                 sender.sendMessage(ChatColor.RED + "Неизвестная подкоманда. Используйте: /gribadmin tool <set|get|reset|reassemble>");
                 break;

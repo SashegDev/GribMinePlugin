@@ -69,7 +69,6 @@ public abstract class LegendaryItem {
         }
         return item;
     }
-
     // Геттеры
     public String getId() { return id; }
     public double getSpawnChance() { return spawnChance; }

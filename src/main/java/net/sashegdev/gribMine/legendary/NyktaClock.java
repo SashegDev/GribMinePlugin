@@ -1,11 +1,14 @@
 package net.sashegdev.gribMine.legendary;
 
+import net.sashegdev.gribMine.DebugLogger;
 import net.sashegdev.gribMine.core.LegendaryItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -26,10 +29,24 @@ public class NyktaClock extends LegendaryItem {
 
     @Override
     public void onUse(Player player) {
-        player.setCooldown(Objects.requireNonNull(player.getItemInUse()).getType(),20*60*20);
-        World world = player.getWorld();
-        world.setFullTime(world.getTime() < 13000 ? 14000 : 0);
-        world.spawnParticle(Particle.REVERSE_PORTAL, player.getLocation(),160,0.1,0.1,0.1,0.2,0,true);
-        player.sendMessage(ChatColor.LIGHT_PURPLE + "Время изменено!");
+        // Получаем предмет из главной руки игрока
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        // Проверяем, что предмет не null и соответствует легендарному предмету
+        if (item != null && item.isSimilar(this.getItemStack())) {
+            // Устанавливаем кулдаун на 20 минут (20 * 60 * 20 тиков)
+            player.setCooldown(item.getType(), 20 * 60 * 20);
+
+            // Изменяем время в мире
+            World world = player.getWorld();
+            world.setFullTime(world.getTime() < 13000 ? 14000 : 0);
+
+            // Спауним частицы и отправляем сообщение игроку
+            world.spawnParticle(Particle.REVERSE_PORTAL, player.getLocation(), 160, 0.1, 0.1, 0.1, 0.2, null, true);
+            player.sendMessage(ChatColor.LIGHT_PURPLE + "Время изменено!");
+        } else {
+            // Логируем ошибку, если предмет не найден или не соответствует
+            DebugLogger.log("Предмет не найден в руке игрока или не соответствует легендарному предмету.", DebugLogger.LogLevel.WARNING);
+        }
     }
 }

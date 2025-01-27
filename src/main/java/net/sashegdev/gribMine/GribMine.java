@@ -258,7 +258,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
 
     @EventHandler
     public void IgrocDrochitEvevent(PlayerInteractEvent e) {
-        if (e.getItem() == null || e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) return;
+        if (e.getItem() == null || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) return;
         ItemStack item = e.getItem();
         Player player = e.getPlayer();
 
@@ -267,9 +267,14 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 || item.equals(player.getInventory().getItemInMainHand());
         if (!isEquipped) return;
 
+        DebugLogger.log("ItemMeta: " + Objects.requireNonNull(item.getItemMeta()).getAsString(), DebugLogger.LogLevel.INFO);
+
         // Извлекаем ID из скрытой строки в лоре
         String legendaryId = extractHiddenId(item.getItemMeta());
-        if (legendaryId == null) return;
+        if (legendaryId == null) {
+            DebugLogger.log("Скрытый ID не найден в лоре предмета.", DebugLogger.LogLevel.WARNING);
+            return;
+        }
 
         // Проверяем кулдаун и активируем
         LegendaryItem legendary = LegendaryRegistry.getById(legendaryId);
@@ -277,9 +282,10 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             legendary.onUse(player);
             DebugLogger.log(player.getName() + " активировал " + legendary.getId(), DebugLogger.LogLevel.INFO);
             e.setCancelled(true);
+        } else {
+            DebugLogger.log("Кулдаун не истек или предмет не найден в регистре.", DebugLogger.LogLevel.WARNING);
         }
     }
-
     private String extractHiddenId(ItemMeta meta) {
         if (meta == null || !meta.hasLore()) return null;
         for (String line : meta.getLore()) {
@@ -593,6 +599,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.add("check_update");
                 completions.add("get_config");
                 completions.add("weapon");
+                completions.add("tool");
+                completions.add("legendary");
                 completions.add("airdrop");
             } else if (args.length == 2 && args[0].equalsIgnoreCase("weapon")) {
                 // Подсказки для второго аргумента
@@ -630,6 +638,12 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             } else if (args.length == 4 && args[0].equalsIgnoreCase("airdrop") && args[1].equalsIgnoreCase("give")) {
                 // Подсказка для числа (количество аирдропов)
                 completions.add("[<count>]"); // Подсказка для ввода числа
+            }
+            else if (args.length == 2 && args[0].equalsIgnoreCase("tool")) {
+                completions.add("get");
+                completions.add("set");
+                completions.add("reassemble");
+                completions.add("reset");
             }
             else if (args.length == 2 && args[0].equalsIgnoreCase("legendary")) {
                 completions.add("give");
@@ -682,7 +696,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 String[] parts = message.split(" ", 2);
                 String actualCommand = "gribadmin" + (parts.length > 1 ? " " + parts[1] : "");
                 Bukkit.getScheduler().runTask(this, () -> {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), actualCommand);
+                    Bukkit.dispatchCommand(player, actualCommand);
                 });
             }
         }

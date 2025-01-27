@@ -90,28 +90,24 @@ public class WeaponManager implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item == null || item.getType().isAir()) return;
 
-        // Проверяем, разрешён ли тип предмета
         String weaponType = item.getType().name().toLowerCase();
         if (!allowedWeaponTypes.contains(weaponType)) {
-            return; // Пропускаем предмет, если его тип не разрешён
+            return;
         }
 
         ItemMeta itemMeta = item.getItemMeta();
         if (itemMeta == null) return;
 
-        // Проверяем, есть ли у предмета уже лор и цветное имя
         boolean hasLore = itemMeta.hasLore();
         boolean hasDisplayName = itemMeta.hasDisplayName() && !itemMeta.getDisplayName().isEmpty();
 
-        // Если у предмета уже есть лор и цветное имя, пропускаем его
         if (hasLore && hasDisplayName) {
             return;
         }
 
-        // Получаем текущую редкость
         String rarity = getRarityFromLore(itemMeta.getLore());
         if (rarity == null || !rarityList.contains(rarity)) {
-            rarity = rarityList.get(0); // Минимальная редкость
+            rarity = rarityList.get(0);
         }
 
         double damageModifier = getDamageModifier(rarity);
@@ -119,13 +115,10 @@ public class WeaponManager implements Listener {
         String lastRarity = lastRarityCache.get(playerId);
         Double lastDamageModifier = lastDamageModifierCache.get(playerId);
 
-        // Если редкость или модификатор урона изменились, или предмет не имеет лора/модификаторов
         if (!rarity.equals(lastRarity) || !Objects.equals(damageModifier, lastDamageModifier) || !hasLore || !hasDisplayName) {
-            // Обновляем кэш
             lastRarityCache.put(playerId, rarity);
             lastDamageModifierCache.put(playerId, damageModifier);
 
-            // Обновляем название и лор
             String displayName = itemMeta.getDisplayName();
             if (displayName == null || displayName.isEmpty()) {
                 displayName = item.getType().toString().toLowerCase().replace("_", " ");
@@ -133,9 +126,11 @@ public class WeaponManager implements Listener {
             }
             ChatColor color = rarityColors.getOrDefault(rarity, ChatColor.GRAY);
             itemMeta.setDisplayName(color + ChatColor.stripColor(displayName).trim());
-            itemMeta.setLore(createLoreWithRarity(rarity, "none"));
 
-            // Применяем изменения к предмету
+            // Получаем текущую способность из лора
+            String currentAbility = getPassiveAbilityFromLore(itemMeta.getLore());
+            itemMeta.setLore(createLoreWithRarity(rarity, currentAbility)); // Сохраняем существующую способность
+
             item.setItemMeta(itemMeta);
         }
     }

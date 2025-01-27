@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.bunker;
 
 import net.sashegdev.gribMine.DebugLogger;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
@@ -54,8 +55,9 @@ public class ZombieHordeListener implements Listener {
             Zombie zombie = (Zombie) location.getWorld().spawnEntity(location, EntityType.ZOMBIE);
             customizeZombie(zombie);
         }
+        Location originLocation = original.getLocation();
         original.remove(); // Удаляем оригинального зомби
-        DebugLogger.log("Zombies has spaned!", DebugLogger.LogLevel.INFO);
+        DebugLogger.log("Zombies at: "+originLocation, DebugLogger.LogLevel.INFO);
     }
 
     private void customizeZombie(Zombie zombie) {

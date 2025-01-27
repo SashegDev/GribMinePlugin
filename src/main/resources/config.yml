@@ -97,7 +97,7 @@ Supply:
 
 airdrop_enabled: true  # true - аирдропы включены, false - отключены
 
-airdrop_falling_speed: 0.00005  # Скорость падения аирдропа (блоков за тик)
+airdrop_falling_speed: 0.05  # Скорость падения аирдропа (блоков за тик)
 airdrop_update_interval: 10     # Интервал обновления падения (в тиках)
 
 #Легендарки! since beta-1.3.5
