@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class HermesSandals extends LegendaryItem {
     public HermesSandals() {

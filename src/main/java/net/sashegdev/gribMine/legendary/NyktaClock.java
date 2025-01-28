@@ -10,7 +10,6 @@ import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class NyktaClock extends LegendaryItem {
     public NyktaClock() {
@@ -34,7 +33,7 @@ public class NyktaClock extends LegendaryItem {
 
         // Проверяем, что предмет не null и соответствует легендарному предмету
         if (item != null && item.isSimilar(this.getItemStack())) {
-            // Устанавливаем кулдаун на 20 минут (20 * 60 * 20 тиков)
+            // Устанавливаем кулдаун на 20 минут
             player.setCooldown(item.getType(), 20 * 60 * 20);
 
             // Изменяем время в мире

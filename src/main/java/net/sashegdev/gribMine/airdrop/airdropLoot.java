@@ -13,6 +13,7 @@ import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -114,6 +115,79 @@ public class airdropLoot {
         }
     }
 
+    public static void addLootToPlayerInventory(Player player) {
+        DebugLogger.log("Adding loot to player: " + player.getName(), DebugLogger.LogLevel.INFO);
+
+        // Add weapons
+        for (int i = 0; i < GribMine.getMineConfig().getInt("AirDropWeaponGenerateNumber"); i++) {
+            ItemStack weapon = generateRandomWeapon();
+            if (weapon != null) {
+                player.getInventory().addItem(weapon);
+                DebugLogger.log("Added weapon: " + weapon.getType(), DebugLogger.LogLevel.INFO);
+            } else {
+                DebugLogger.log("Failed to generate a weapon.", DebugLogger.LogLevel.ERROR);
+            }
+        }
+
+        // Add coins
+        int totalCoins = generateRandomCoins();
+        addCoinsToPlayerInventory(player, totalCoins);
+
+        // Add random items (non-coin items)
+        for (int rot = random.nextInt(1, GribMine.getMineConfig().getInt("AirDropMaxRotations") + 1); rot > 0; rot--) {
+            String randomItem = getRandomItemWithChance();
+            if (randomItem != null) {
+                Material material = Material.matchMaterial(randomItem); // Получаем материал из конфига
+                if (material == null) {
+                    DebugLogger.log("Invalid material: " + randomItem, DebugLogger.LogLevel.ERROR);
+                    continue; // Пропускаем этот предмет, если материал не найден
+                }
+                int amount = getItemAmount(randomItem);
+                ItemStack itemStack = new ItemStack(material, amount);
+
+                player.getInventory().addItem(itemStack);
+                DebugLogger.log("Added item: " + randomItem + " x" + amount, DebugLogger.LogLevel.INFO);
+            } else {
+                DebugLogger.log("Failed to select a random item.", DebugLogger.LogLevel.ERROR);
+            }
+        }
+
+        // Add legendary items to the player's inventory
+        LegendaryRegistry.getAll().stream()
+                .filter(LegendaryItem::isEnabled)
+                .forEach(item -> {
+                    if (Math.random() < item.getSpawnChance() && LegendaryManager.canSpawn(item)) {
+                        player.getInventory().addItem(item.createItem());
+                        LegendaryManager.markAsSpawned(item);
+                    }
+                });
+
+        // Debug: Print player inventory contents
+        DebugLogger.log("Player inventory contents:", DebugLogger.LogLevel.INFO);
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null) {
+                DebugLogger.log(item.getType() + " x" + item.getAmount(), DebugLogger.LogLevel.INFO);
+            }
+        }
+    }
+
+    // Метод для добавления монет в инвентарь игрока
+    private static void addCoinsToPlayerInventory(Player player, int totalCoins) {
+        int[] coinValues = {500, 100, 50, 20, 10, 5, 1}; // Номиналы монет от большего к меньшему
+        int remainingCoins = totalCoins;
+
+        for (int coinValue : coinValues) {
+            if (remainingCoins <= 0) break;
+
+            int count = remainingCoins / coinValue;
+            if (count > 0) {
+                ItemStack coinStack = createCoinItem(coinValue, count);
+                player.getInventory().addItem(coinStack);
+                remainingCoins -= count * coinValue;
+                DebugLogger.log("Added " + count + " x " + coinValue + " Coin to player", DebugLogger.LogLevel.INFO);
+            }
+        }
+    }
 
     private static String getRandomItemWithChance() {
         double totalWeight = lootTable.values().stream()
@@ -150,7 +224,7 @@ public class airdropLoot {
 
     private static ItemStack generateRandomWeapon() {
         // Получаем случайную рарность
-        List<String> rarityList = weaponManager.getRarityList();
+        List<String> rarityList = WeaponManager.getRarityList();
         String randomRarity = rarityList.get(random.nextInt(rarityList.size()));
 
         // Получаем случайную способность для этой рарности

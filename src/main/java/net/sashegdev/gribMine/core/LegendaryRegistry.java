@@ -2,7 +2,7 @@ package net.sashegdev.gribMine.core;
 
 import net.sashegdev.gribMine.legendary.HermesSandals;
 import net.sashegdev.gribMine.legendary.NyktaClock;
-import net.sashegdev.gribMine.legendary.ThorHammer;
+import net.sashegdev.gribMine.legendary.StellarWhirl;
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ public class LegendaryRegistry {
     static {
         register(new NyktaClock());
         register(new HermesSandals());
-        register(new ThorHammer());
+        register(new StellarWhirl());
     }
 
     private static void register(LegendaryItem item) {

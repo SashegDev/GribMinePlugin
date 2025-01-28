@@ -8,6 +8,8 @@ import me.lucko.spark.api.statistic.types.DoubleStatistic;
 import me.lucko.spark.api.statistic.types.GenericStatistic;
 import org.bukkit.ChatColor;
 
+import java.util.Objects;
+
 public class TPSUtil {
 
     public static double getTPS() {
@@ -17,7 +19,7 @@ public class TPSUtil {
         }
 
         // Получаем TPS за последнюю минуту
-        return spark.tps().poll(StatisticWindow.TicksPerSecond.MINUTES_1);
+        return Objects.requireNonNull(spark.tps()).poll(StatisticWindow.TicksPerSecond.MINUTES_1);
     }
 
     public static double getMSPT() {
@@ -28,6 +30,7 @@ public class TPSUtil {
 
         // Получаем MSPT за последнюю минуту
         GenericStatistic<DoubleAverageInfo, StatisticWindow.MillisPerTick> msptStatistic = spark.mspt();
+        assert msptStatistic != null;
         DoubleAverageInfo msptInfo = msptStatistic.poll(StatisticWindow.MillisPerTick.MINUTES_1);
 
         // Возвращаем среднее значение MSPT

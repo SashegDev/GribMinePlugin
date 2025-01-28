@@ -4,27 +4,19 @@ import net.md_5.bungee.api.ChatColor;
 import net.sashegdev.gribMine.DebugLogger;
 import net.sashegdev.gribMine.GribMine;
 import net.sashegdev.gribMine.weapon.ability.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.swing.*;
 import java.util.*;
 
 public class WeaponManager implements Listener {
     private static List<String> rarityList = null;
-    private static HashMap<UUID, List<String>> playerRarityMap = new HashMap<>();
     private static HashMap<String, Double> damageModifiers = new HashMap<>();
     private static final HashMap<String, List<WeaponAbility>> weaponAbilitiesForRarity = new HashMap<>(); // Хранит способности для каждого оружия
     private static final HashMap<String, WeaponAbility> weaponAbilities = new HashMap<>();
@@ -46,7 +38,7 @@ public class WeaponManager implements Listener {
         WeaponManager.rarityList = rarityList;
         // Инициализация damageModifiers, если он равен null
         WeaponManager.damageModifiers = damageModifiers != null ? damageModifiers : new HashMap<>();
-        playerRarityMap = new HashMap<>();
+        HashMap<UUID, List<String>> playerRarityMap = new HashMap<>();
         weaponAbilitiesForRarity.put("common", new ArrayList<>());
         weaponAbilitiesForRarity.put("uncommon", new ArrayList<>());
         weaponAbilitiesForRarity.put("rare", new ArrayList<>());
@@ -132,15 +124,6 @@ public class WeaponManager implements Listener {
             itemMeta.setLore(createLoreWithRarity(rarity, currentAbility)); // Сохраняем существующую способность
 
             item.setItemMeta(itemMeta);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerPickupItem(PlayerPickupItemEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem().getItemStack();
-        if (item != null && !item.getType().isAir()) {
-            WeaponManager.changeWeaponForPlayer(player);
         }
     }
 

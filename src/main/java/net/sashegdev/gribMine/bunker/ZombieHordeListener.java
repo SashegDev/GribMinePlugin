@@ -1,6 +1,7 @@
 package net.sashegdev.gribMine.bunker;
 
 import net.sashegdev.gribMine.DebugLogger;
+import net.sashegdev.gribMine.GribMine;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -20,11 +21,11 @@ import java.util.Random;
 
 public class ZombieHordeListener implements Listener {
 
-    private final JavaPlugin plugin;
+    private static JavaPlugin plugin = GribMine.getPlugin(GribMine.class);
     private final Random random = new Random();
 
     public ZombieHordeListener(JavaPlugin plugin) {
-        this.plugin = plugin;
+        ZombieHordeListener.plugin = plugin;
     }
 
     @EventHandler
@@ -50,17 +51,17 @@ public class ZombieHordeListener implements Listener {
         }.runTaskLater(plugin, 1L);
     }
 
-    private void spawnHorde(org.bukkit.Location location, Zombie original) {
+    public static void spawnHorde(org.bukkit.Location location, Zombie original) {
         for (int i = 0; i < 10; i++) {
-            Zombie zombie = (Zombie) location.getWorld().spawnEntity(location, EntityType.ZOMBIE);
+            Zombie zombie = (Zombie) Objects.requireNonNull(location.getWorld()).spawnEntity(location, EntityType.ZOMBIE);
             customizeZombie(zombie);
         }
         Location originLocation = original.getLocation();
         original.remove(); // Удаляем оригинального зомби
-        DebugLogger.log("Zombies at: "+originLocation, DebugLogger.LogLevel.INFO);
+        DebugLogger.log("Zombies at: X:"+originLocation.getBlockX()+" Z:"+originLocation.getBlockZ()+" World:"+originLocation.getWorld(), DebugLogger.LogLevel.INFO);
     }
 
-    private void customizeZombie(Zombie zombie) {
+    private static void customizeZombie(Zombie zombie) {
         // Настройка характеристик
         zombie.setRemoveWhenFarAway(false);
         zombie.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 1,false,false,false));

@@ -39,8 +39,7 @@ public class LootListener implements Listener {
     // Обработка смерти зомби с тегом "zombi"
     @EventHandler
     public void onZombieDeath(EntityDeathEvent event) {
-        if (!(event.getEntity() instanceof Zombie)) return;
-        Zombie zombie = (Zombie) event.getEntity();
+        if (!(event.getEntity() instanceof Zombie zombie)) return;
 
         NamespacedKey key = new NamespacedKey(GribMine.getInstance(), "zombi");
         if (zombie.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
@@ -68,7 +67,6 @@ public class LootListener implements Listener {
 
     // Проверка, что лут генерируется для контейнера
     private boolean isContainer(LootContext context) {
-        if (context.getLocation() == null) return false;
         Material type = context.getLocation().getBlock().getType();
         return type == Material.CHEST || type == Material.BARREL || type == Material.SHULKER_BOX || type == Material.DECORATED_POT;
     }

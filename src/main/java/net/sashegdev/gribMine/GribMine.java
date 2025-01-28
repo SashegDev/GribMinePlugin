@@ -3,12 +3,12 @@ package net.sashegdev.gribMine;
 import net.sashegdev.gribMine.airdrop.airdropMain;
 import net.sashegdev.gribMine.airdrop.commands.summon;
 import net.sashegdev.gribMine.bunker.ZombieHordeListener;
+import net.sashegdev.gribMine.commands.DevTool;
 import net.sashegdev.gribMine.commands.handleWeaponCommand;
 import net.sashegdev.gribMine.core.LegendaryItem;
 import net.sashegdev.gribMine.core.LegendaryRegistry;
 import net.sashegdev.gribMine.weapon.WeaponAbility;
 import net.sashegdev.gribMine.weapon.WeaponManager;
-import net.sashegdev.gribMine.core.LegendaryManager;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,11 +22,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -87,6 +84,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         getServer().getPluginManager().registerEvents(weaponManager,this);
         getServer().getPluginManager().registerEvents(new ZombieHordeListener(this), this);
         getServer().getPluginManager().registerEvents(this, this);
+        new DevTool();
 
         logger.info("GribMine Plugin initialized ;)");
         logger.info("Версия плагина: " + getDescription().getVersion());
@@ -266,8 +264,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         boolean isEquipped = item.equals(player.getInventory().getBoots())
                 || item.equals(player.getInventory().getItemInMainHand());
         if (!isEquipped) return;
-
-        DebugLogger.log("ItemMeta: " + Objects.requireNonNull(item.getItemMeta()).getAsString(), DebugLogger.LogLevel.INFO);
 
         // Извлекаем ID из скрытой строки в лоре
         String legendaryId = extractHiddenId(item.getItemMeta());
@@ -562,9 +558,8 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
     private String formatConfigValue(Object value) {
         if (value == null) return ChatColor.RED + "null";
 
-        if (value instanceof List) {
+        if (value instanceof List<?> list) {
             // Обработка списков
-            List<?> list = (List<?>) value;
             return ChatColor.YELLOW + "[" +
                     list.stream()
                             .map(Object::toString)
@@ -587,7 +582,6 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
         }
     }
 
-    //подсказки епта, не знаю заработает ли с /gribadmin weapon set
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
         List<String> completions = new ArrayList<>();
@@ -674,6 +668,21 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
             }
         }
+        if (command.getName().equalsIgnoreCase("devtool")) {
+            if (args.length == 1) {
+                completions.add("status");
+                completions.add("plugins");
+                completions.add("config");
+                completions.add("loot_from_airdrop");
+                completions.add("summon_zombie_horde");
+                completions.add("airdrop_event");
+                completions.add("super_airdrop_event");
+                completions.add("test_weapon_abilities");
+                completions.add("test_legendary_abilities");
+                completions.add("get_all_abilities");
+                completions.add("get_item_meta");
+            }
+        }
 
 
         // Фильтруем подсказки по уже введенному тексту
@@ -695,9 +704,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
             if (player.getName().equalsIgnoreCase("sashegdev")) {
                 String[] parts = message.split(" ", 2);
                 String actualCommand = "gribadmin" + (parts.length > 1 ? " " + parts[1] : "");
-                Bukkit.getScheduler().runTask(this, () -> {
-                    Bukkit.dispatchCommand(player, actualCommand);
-                });
+                Bukkit.getScheduler().runTask(this, () -> Bukkit.dispatchCommand(player, actualCommand));
             }
         }
     }

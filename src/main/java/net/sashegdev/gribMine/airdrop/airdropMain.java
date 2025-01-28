@@ -196,8 +196,4 @@ public class airdropMain implements Listener {
     public Location getLocation() {
         return location;
     }
-
-    //public static List<airdropMain> getAirdropList() {
-        //return airdropList;
-    //}
 }
