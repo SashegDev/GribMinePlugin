@@ -653,7 +653,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 }
             }
         }
-        if (command.getName().equalsIgnoreCase("gribmine")) {
+        else if (command.getName().equalsIgnoreCase("gribmine")) {
             if (args.length == 1) {
                 // Подсказки для первого аргумента
                 completions.add("tps");
@@ -668,7 +668,7 @@ public final class GribMine extends JavaPlugin implements CommandExecutor, Liste
                 completions.removeIf(s -> !s.toLowerCase().startsWith(lastArg));
             }
         }
-        if (command.getName().equalsIgnoreCase("devtool")) {
+        else if (command.getName().equalsIgnoreCase("devtool")) {
             if (args.length == 1) {
                 completions.add("status");
                 completions.add("plugins");

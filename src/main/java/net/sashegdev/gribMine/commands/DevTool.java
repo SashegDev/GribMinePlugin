@@ -42,6 +42,8 @@ public class DevTool implements CommandExecutor {
             return true;
         }
 
+        if (!(GribMine.getMineConfig().getBoolean("dev_tools"))) {sender.sendMessage("DevTools currently is not active");return true;}
+
         if (args.length == 0) {
             player.sendMessage(ChatColor.RED + "Используйте: /devtool <status|plugins|config|loot_from_airdrop|summon_zombie_horde|airdrop_event|super_airdrop_event|test_weapon_abilities|test_legendary_abilities|get_all_abilities>");
             return true;
@@ -141,11 +143,11 @@ public class DevTool implements CommandExecutor {
         for (WeaponAbility ability : WeaponManager.getWeaponAbilities().values()) {
             try {
                 ability.activate(player, player); // Эмулируем активацию способности с 100% шансом
-                player.sendMessage(ChatColor.GREEN + ability.getRussianName() + " - 🟢"); // Успешная активация
+                player.sendMessage(ChatColor.GREEN + ability.getRussianName() + " - да"); // Успешная активация
             } catch (Exception e) {
                 // Логируем ошибку в консоль
                 DebugLogger.log("Ошибка при активации способности " + ability.getRussianName() + ": " + e.getMessage(), DebugLogger.LogLevel.ERROR);
-                player.sendMessage(ChatColor.RED + ability.getRussianName() + " - 🔴"); // Ошибка при активации
+                player.sendMessage(ChatColor.RED + ability.getRussianName() + " - нет"); // Ошибка при активации
             }
         }
     }
@@ -156,11 +158,11 @@ public class DevTool implements CommandExecutor {
             if (item.isEnabled()) { // Проверяем, включен ли предмет
                 try {
                     item.onUse(player); // Эмулируем активацию способности с 100% шансом
-                    player.sendMessage(ChatColor.GREEN + item.getId() + " - 🟢"); // Успешная активация
+                    player.sendMessage(ChatColor.GREEN + item.getId() + " - да"); // Успешная активация
                 } catch (Exception e) {
                     // Логируем ошибку в консоль
                     DebugLogger.log("Ошибка при активации способности " + item.getId() + ": " + e.getMessage(), DebugLogger.LogLevel.ERROR);
-                    player.sendMessage(ChatColor.RED + item.getId() + " - 🔴"); // Ошибка при активации
+                    player.sendMessage(ChatColor.RED + item.getId() + " - нет"); // Ошибка при активации
                 }
             }
         }

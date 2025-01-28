@@ -116,6 +116,9 @@ legendary_items:
 debug_logs: true
 chat_debug_logs: true
 
+#Иструменты разработчика для тестов
+dev_tools: false
+
 
 # Включить/выключить автопроверку обновлений
 check-for-updates: true
